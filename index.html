@@ -4,7 +4,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>기분 찰칵 & 뮤직 라운지 📸🎵</title>
+  <title>기분 찰칵 무한 갤러리 📸🎵</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -15,7 +15,7 @@
     }
     @keyframes floatUp {
       0% { transform: translateY(0) scale(0.8); opacity: 1; }
-      100% { transform: translateY(-70px) scale(1.3); opacity: 0; }
+      100% { transform: translateY(-75px) scale(1.3); opacity: 0; }
     }
     .emoji-pop {
       animation: floatUp 1.2s ease-out forwards;
@@ -27,53 +27,62 @@
   <!-- 헤더 영역 -->
   <header class="w-full max-w-sm text-center pt-2">
     <div class="inline-block bg-gradient-to-r from-rose-900 to-indigo-900 text-rose-300 text-xs font-bold px-3.5 py-1 rounded-full mb-1 border border-rose-700/50 shadow-sm">
-      📸 실시간 포토 & 감정 사운드트랙
+      ✨ 전 세계 고화질 무한 랜덤 사진 & 사운드
     </div>
     <h1 class="text-2xl font-black text-rose-100 flex items-center justify-center gap-1.5">
-      기분 찰칵 뮤직 캔버스 🎵
+      기분 찰칵 무한 캔버스 📸
     </h1>
-    <p class="text-xs text-slate-400 mt-1">지금 기분을 말하면 사진과 음악이 흘러나와요</p>
+    <p class="text-xs text-slate-400 mt-1">누를 때마다 수만 장의 새로운 사진이 무한 매칭돼요</p>
   </header>
 
-  <!-- 메인 사진 액자 & 음악 컨트롤러 -->
+  <!-- 메인 사진 액자 -->
   <main class="w-full max-w-sm my-auto flex flex-col items-center relative">
     
     <!-- 사진 뷰포트 -->
-    <div class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-2 border-slate-700 bg-slate-900 flex items-center justify-center group">
-      <!-- 배경 사진 -->
-      <img id="moodPhoto" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80" 
-           alt="기분 사진" class="w-full h-full object-cover transition-transform duration-700">
+    <div class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-2 border-slate-700 bg-slate-900 flex items-center justify-center">
+      
+      <!-- 로딩 인디케이터 -->
+      <div id="loadingSpinner" class="absolute inset-0 bg-slate-900 flex flex-col items-center justify-center z-10 hidden">
+        <i class="fa-solid fa-spinner fa-spin text-3xl text-rose-400 mb-2"></i>
+        <span class="text-xs font-bold text-slate-400">새로운 풍경 가져오는 중...</span>
+      </div>
+
+      <!-- 배경 사진 (무한 랜덤 로더) -->
+      <img id="moodPhoto" 
+           src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&auto=format&fit=crop&q=80" 
+           alt="기분 사진" 
+           class="w-full h-full object-cover transition-opacity duration-500 opacity-100">
       
       <!-- 오버레이 그라데이션 -->
-      <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none"></div>
 
       <!-- 상단 감정 뱃지 -->
-      <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 text-xs font-bold flex items-center gap-1.5 shadow-md">
-        <span id="badgeEmoji">🏖️</span>
-        <span id="badgeLabel">평화로운 바다</span>
+      <div class="absolute top-3 left-3 bg-black/65 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 text-xs font-bold flex items-center gap-1.5 shadow-md">
+        <span id="badgeEmoji">🌿</span>
+        <span id="badgeLabel">평온한 자연</span>
       </div>
 
-      <!-- 음악 재생 중 표시등 (우측 상단) -->
-      <div id="musicIndicator" class="absolute top-3 right-3 bg-emerald-950/80 border border-emerald-500/60 px-2.5 py-1 rounded-full text-[10px] font-bold text-emerald-300 flex items-center gap-1.5 shadow-md">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-        <span id="musicStateText">BGM 연주 중</span>
-      </div>
+      <!-- 사진 새로고침 셔플 버튼 (우측 상단) -->
+      <button onclick="fetchAnotherPhoto()" title="같은 기분 다른 사진" class="absolute top-3 right-3 bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/20 text-xs font-bold text-rose-200 px-2.5 py-1 rounded-full flex items-center gap-1 active:scale-95 transition shadow-md">
+        <i class="fa-solid fa-rotate text-[11px]"></i>
+        <span>다른 사진</span>
+      </button>
 
-      <!-- 사진 위로 솟아오르는 이모지 컨테이너 -->
-      <div id="floatingEmojiContainer" class="absolute inset-0 pointer-events-none flex items-center justify-center"></div>
+      <!-- 사진 위 솟아오르는 이모지 컨테이너 -->
+      <div id="floatingEmojiContainer" class="absolute inset-0 pointer-events-none flex items-center justify-center z-20"></div>
 
       <!-- 하단 문구 -->
-      <div class="absolute bottom-3 inset-x-3 text-center">
+      <div class="absolute bottom-3 inset-x-3 text-center pointer-events-none">
         <p id="photoCaption" class="text-xs font-black text-rose-200 drop-shadow-md">
-          "지금 이 순간, 당신의 마음에 꼭 맞는 풍경을 담았어요."
+          "지금 마음에 닿는 새로운 순간을 비춰드릴게요."
         </p>
       </div>
     </div>
 
-    <!-- 오디오 제어 버튼 바 -->
+    <!-- 오디오 제어 바 -->
     <div class="w-full flex items-center justify-between mt-2.5 px-2">
-      <span id="nowPlayingTrack" class="text-xs text-indigo-300 font-bold truncate max-w-[200px]">
-        🎵 평온의 멜로디
+      <span id="nowPlayingTrack" class="text-xs text-indigo-300 font-bold truncate max-w-[210px]">
+        🎵 잔잔한 바람의 선율
       </span>
       <button onclick="toggleBgm()" class="text-xs bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-300 px-3 py-1 rounded-xl active:scale-95 transition flex items-center gap-1.5">
         <i id="bgmIcon" class="fa-solid fa-volume-high text-indigo-400"></i>
@@ -81,10 +90,10 @@
       </button>
     </div>
 
-    <!-- 입력부 (텍스트 + 음성인식 마이크) -->
+    <!-- 기분 입력부 (텍스트 + 마이크) -->
     <div class="w-full mt-3 flex flex-col gap-2">
       <div class="flex gap-2">
-        <input id="moodInput" type="text" placeholder="예: 오늘따라 신나고 설레! or 너무 피곤해" 
+        <input id="moodInput" type="text" placeholder="예: 오늘 기분 최고! or 밤바다 보고 싶어" 
                class="flex-1 bg-slate-900 border border-slate-700 rounded-2xl px-3.5 py-3 text-xs font-bold text-white outline-none focus:border-rose-500 shadow-inner">
         <button id="micBtn" onclick="toggleSpeech()" class="w-12 bg-slate-800 hover:bg-slate-700 text-rose-400 border border-slate-700 rounded-2xl flex items-center justify-center active:scale-95 transition shadow-sm">
           <i class="fa-solid fa-microphone text-base"></i>
@@ -92,8 +101,8 @@
       </div>
 
       <button onclick="applyMood()" class="w-full py-4 bg-gradient-to-r from-rose-600 via-pink-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white font-black text-sm rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-95 transition">
-        <i class="fa-solid fa-camera-retro text-lg"></i>
-        <span>사진 & 음악 매칭하기!</span>
+        <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+        <span>새로운 사진 & 음악 찾기!</span>
       </button>
     </div>
 
@@ -101,22 +110,23 @@
 
   <!-- 빠른 감정 버튼들 -->
   <footer class="w-full max-w-sm pt-2">
-    <div class="text-[11px] font-bold text-slate-400 mb-1.5 px-1">기분 바로 고르기:</div>
+    <div class="text-[11px] font-bold text-slate-400 mb-1.5 px-1">다양한 테마 즉시 탐색:</div>
     <div class="grid grid-cols-4 gap-1.5">
-      <button onclick="quick('행복하고 설레')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-rose-300 text-xs font-bold py-2 rounded-xl active:scale-95">🥰 설렘</button>
-      <button onclick="quick('피곤하고 지쳐')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-indigo-300 text-xs font-bold py-2 rounded-xl active:scale-95">🥱 지침</button>
-      <button onclick="quick('비 오고 쓸쓸해')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-blue-300 text-xs font-bold py-2 rounded-xl active:scale-95">🌧️ 쓸쓸</button>
-      <button onclick="quick('화나고 짜증나')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-300 text-xs font-bold py-2 rounded-xl active:scale-95">🔥 폭발</button>
+      <button onclick="quick('행복하고 설레')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-rose-300 text-xs font-bold py-2 rounded-xl active:scale-95">🥰 행복설렘</button>
+      <button onclick="quick('깊은 밤 고요한 휴식')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-indigo-300 text-xs font-bold py-2 rounded-xl active:scale-95">🌙 밤하늘</button>
+      <button onclick="quick('비 내리는 창가 쓸쓸해')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-blue-300 text-xs font-bold py-2 rounded-xl active:scale-95">🌧️ 빗소리</button>
+      <button onclick="quick('화나고 답답해 불꽃')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-300 text-xs font-bold py-2 rounded-xl active:scale-95">🔥 불멍정화</button>
     </div>
   </footer>
 
   <script>
-    // --- 고품질 Web Audio 실시간 음악 & 효과음 합성 엔진 ---
+    // --- Web Audio 실시간 음악 & 효과음 엔진 ---
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
     let bgmInterval = null;
     let isBgmOn = true;
     let currentMood = 'peaceful';
+    let currentKeyword = 'nature,calm';
 
     function getAudioCtx() {
       if (!audioCtx) audioCtx = new AudioCtx();
@@ -124,45 +134,41 @@
       return audioCtx;
     }
 
-    // 통통 튀는 효과음 (선택 시 팡파레)
     function playPopSfx(type) {
       try {
         const ctx = getAudioCtx();
         const now = ctx.currentTime;
         if (type === 'happy') {
-          // 기분 좋은 별가루 효과음
-          [523, 659, 783, 1046].forEach((f, i) => {
+          [523, 659, 783, 1046, 1318].forEach((f, i) => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
-            osc.frequency.setValueAtTime(f, now + i * 0.06);
-            gain.gain.setValueAtTime(0.2, now + i * 0.06);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.15);
+            osc.frequency.setValueAtTime(f, now + i * 0.05);
+            gain.gain.setValueAtTime(0.18, now + i * 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.15);
             osc.connect(gain);
             gain.connect(ctx.destination);
-            osc.start(now + i * 0.06);
-            osc.stop(now + i * 0.06 + 0.16);
+            osc.start(now + i * 0.05);
+            osc.stop(now + i * 0.05 + 0.16);
           });
         } else if (type === 'fire') {
-          // 묵직한 쿵 소리
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sawtooth';
           osc.frequency.setValueAtTime(160, now);
           osc.frequency.exponentialRampToValueAtTime(40, now + 0.2);
-          gain.gain.setValueAtTime(0.4, now);
+          gain.gain.setValueAtTime(0.35, now);
           gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(now);
           osc.stop(now + 0.22);
         } else {
-          // 물방울 퐁
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(600, now);
+          osc.frequency.setValueAtTime(550, now);
           osc.frequency.exponentialRampToValueAtTime(1100, now + 0.1);
-          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.setValueAtTime(0.25, now);
           gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
           osc.connect(gain);
           gain.connect(ctx.destination);
@@ -172,7 +178,6 @@
       } catch(e) {}
     }
 
-    // 감정별 BGM 자동 연주기
     function startMoodBgm(mood) {
       currentMood = mood;
       if (bgmInterval) clearInterval(bgmInterval);
@@ -181,13 +186,12 @@
       const ctx = getAudioCtx();
       let step = 0;
 
-      // 무드별 코드 진행
       const notesMap = {
-        happy: [523.25, 659.25, 783.99, 987.77, 1046.50, 783.99], // C Major 업비트
-        tired: [220.00, 261.63, 329.63, 392.00], // A Minor 슬로우 나른함
-        rain: [349.23, 392.00, 440.00, 523.25], // F Lydian 촉촉한 비
-        fire: [110.00, 130.81, 146.83, 164.81], // D Minor 베이스 펄스
-        peaceful: [261.63, 329.63, 392.00, 523.25] // C Pentatonic 평온
+        happy: [523.25, 659.25, 783.99, 987.77, 1046.50, 783.99],
+        tired: [220.00, 261.63, 329.63, 392.00],
+        rain: [349.23, 392.00, 440.00, 523.25],
+        fire: [110.00, 130.81, 146.83, 164.81],
+        peaceful: [261.63, 329.63, 392.00, 523.25]
       };
 
       const tempo = mood === 'happy' ? 240 : (mood === 'fire' ? 180 : 650);
@@ -220,74 +224,17 @@
       isBgmOn = !isBgmOn;
       const icon = document.getElementById('bgmIcon');
       const text = document.getElementById('bgmBtnText');
-      const ind = document.getElementById('musicIndicator');
 
       if (isBgmOn) {
         icon.className = 'fa-solid fa-volume-high text-indigo-400';
         text.textContent = '음악 끄기';
-        ind.classList.remove('opacity-30');
         startMoodBgm(currentMood);
       } else {
         icon.className = 'fa-solid fa-volume-xmark text-slate-500';
         text.textContent = '음악 켜기';
-        ind.classList.add('opacity-30');
         if (bgmInterval) clearInterval(bgmInterval);
       }
     }
-
-    // --- Unsplash 실시간 무료 고화질 사진 풀 ---
-    const moodAssets = {
-      happy: {
-        photos: [
-          'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop&q=80', // 축제 파티
-          'https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?w=800&auto=format&fit=crop&q=80'  // 햇살 찬란한 꽃밭
-        ],
-        label: '찬란한 축제와 설렘',
-        emoji: '🎉',
-        track: '🎵 상큼하고 경쾌한 멜로디',
-        caption: '"온 세상이 당신을 축하하듯 반짝거리고 있어요!"'
-      },
-      tired: {
-        photos: [
-          'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?w=800&auto=format&fit=crop&q=80', // 아늑한 침대 조명
-          'https://images.unsplash.com/photo-1511497584788-87676104235f?w=800&auto=format&fit=crop&q=80'  // 고요한 숲속 안개
-        ],
-        label: '깊은 휴식의 쉼터',
-        emoji: '🛌',
-        track: '🎵 나른한 꿀잠 앰비언트',
-        caption: '"오늘도 치열하게 달린 당신, 지금은 푹 쉬어도 돼요."'
-      },
-      rain: {
-        photos: [
-          'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=800&auto=format&fit=crop&q=80', // 창가 빗방울
-          'https://images.unsplash.com/photo-1501999635878-71cb5379c2d8?w=800&auto=format&fit=crop&q=80'  // 촉촉한 비 내리는 숲
-        ],
-        label: '마음을 씻는 촉촉한 빗소리',
-        emoji: '🌧️',
-        track: '🎵 빗방울 물방울 피아노',
-        caption: '"소나기가 지나가면 맑은 하늘이 올 거예요."'
-      },
-      fire: {
-        photos: [
-          'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800&auto=format&fit=crop&q=80', // 강렬한 노을과 산
-          'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?w=800&auto=format&fit=crop&q=80'  // 타오르는 캠핑 불꽃
-        ],
-        label: '열정과 정화의 불꽃',
-        emoji: '🔥',
-        track: '🎵 심장을 울리는 파워 비트',
-        caption: '"답답한 건 여기에 다 태워버려요. 후련해질 때까지!"'
-      },
-      peaceful: {
-        photos: [
-          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80', // 에메랄드 바다
-          'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&auto=format&fit=crop&q=80'  // 햇살 가득한 숲길
-        ],
-        label: '평온한 햇살 바다',
-        emoji: '🌿',
-        track: '🎵 잔잔한 바람의 선율',
-        caption: '"바람 따라 구름 따라, 마음이 한결 가벼워집니다."'
-      }
-    };
 
     function popFloatingEmojis(emoji) {
       const container = document.getElementById('floatingEmojiContainer');
@@ -302,6 +249,65 @@
       }
     }
 
+    // --- 수만 장의 고화질 사진을 매칭하는 무한 랜덤 엔진 ---
+    const moodMeta = {
+      happy: {
+        keywords: ['celebration', 'sunshine', 'joy', 'bright-flowers', 'golden-hour-happiness', 'party', 'colorful'],
+        label: '찬란한 축제와 설렘',
+        emoji: '🎉',
+        track: '🎵 상큼하고 경쾌한 멜로디',
+        captions: [
+          '"온 세상이 당신의 행복을 환하게 축하하고 있어요!"',
+          '"눈부신 햇살처럼 눈앞의 모든 순간이 반짝거려요."',
+          '"가장 빛나는 미소로 오늘을 가득 채워보세요."'
+        ]
+      },
+      tired: {
+        keywords: ['night-sky', 'stars', 'deep-forest', 'cozy-bedroom', 'foggy-mountains', 'milky-way', 'calm-lake'],
+        label: '고요한 밤과 깊은 쉼터',
+        emoji: '🌙',
+        track: '🎵 나른한 꿀잠 앰비언트',
+        captions: [
+          '"오늘 하루도 애썼어요. 이제 모든 걱정을 끄고 푹 쉬어요."',
+          '"어두운 밤하늘의 별들이 당신을 따스하게 지켜줄 거예요."',
+          '"나만을 위한 깊고 평화로운 휴식 속으로."'
+        ]
+      },
+      rain: {
+        keywords: ['rainy-window', 'rain-forest', 'mist', 'calm-ocean', 'water-drops', 'autumn-rain', 'moody-clouds'],
+        label: '마음을 씻는 촉촉한 비',
+        emoji: '🌧️',
+        track: '🎵 빗방울 물방울 피아노',
+        captions: [
+          '"비 온 뒤에 땅이 굳듯, 이 비가 지나면 맑은 하늘이 올 거예요."',
+          '"복잡했던 마음을 차분히 씻어내려 보아요."',
+          '"창가를 토닥이는 빗소리에 가만히 귀를 기울여보세요."'
+        ]
+      },
+      fire: {
+        keywords: ['bonfire', 'sunset', 'volcano', 'intense-fire', 'dramatic-sky', 'desert-heat', 'neon-lights'],
+        label: '열정과 정화의 불꽃',
+        emoji: '🔥',
+        track: '🎵 심장을 울리는 파워 비트',
+        captions: [
+          '"답답했던 것들은 여기에 전부 태워버리고 훌훌 털어내요!"',
+          '"타오르는 노을처럼 다시 뜨겁고 당당하게 일어설 수 있어요."',
+          '"후련해질 때까지, 내 안의 에너지를 맘껏 분출해봐요."'
+        ]
+      },
+      peaceful: {
+        keywords: ['tropical-beach', 'green-field', 'blue-sky', 'bamboo-forest', 'gentle-waves', 'scenic-mountains', 'zen-garden'],
+        label: '평온한 힐링 자연',
+        emoji: '🌿',
+        track: '🎵 잔잔한 바람의 선율',
+        captions: [
+          '"밀려오는 파도처럼 마음이 한결 가볍고 평온해집니다."',
+          '"푸른 들판을 스치는 산들바람을 온몸으로 느껴보세요."',
+          '"아무런 잡념 없이 맑고 투명한 시간."'
+        ]
+      }
+    };
+
     function applyMood() {
       const text = document.getElementById('moodInput').value.trim();
       if (!text) {
@@ -309,38 +315,78 @@
         return;
       }
 
-      let category = 'peaceful';
-      let sfxType = 'peace';
+      let cat = 'peaceful';
+      let sfx = 'peace';
 
-      if (/행복|설레|신나|기뻐|즐거|최고|사랑|웃음/g.test(text)) {
-        category = 'happy';
-        sfxType = 'happy';
-      } else if (/피곤|지쳐|힘들|자고|쉬고|방전|졸려/g.test(text)) {
-        category = 'tired';
-        sfxType = 'peace';
-      } else if (/슬퍼|눈물|울적|외로|쓸쓸|비|그리워/g.test(text)) {
-        category = 'rain';
-        sfxType = 'peace';
-      } else if (/화나|짜증|답답|열받|미치|분노|폭발/g.test(text)) {
-        category = 'fire';
-        sfxType = 'fire';
+      if (/행복|설레|신나|기뻐|즐거|최고|사랑|웃음|파티|좋아/g.test(text)) {
+        cat = 'happy';
+        sfx = 'happy';
+      } else if (/피곤|지쳐|힘들|자고|쉬고|방전|졸려|밤|별/g.test(text)) {
+        cat = 'tired';
+        sfx = 'peace';
+      } else if (/슬퍼|눈물|울적|외로|쓸쓸|비|그리워|허전/g.test(text)) {
+        cat = 'rain';
+        sfx = 'peace';
+      } else if (/화나|짜증|답답|열받|미치|분노|폭발|불꽃/g.test(text)) {
+        cat = 'fire';
+        sfx = 'fire';
       }
 
-      const data = moodAssets[category];
-      const photoUrl = data.photos[Math.floor(Math.random() * data.photos.length)];
+      const meta = moodMeta[cat];
+      const randomKeyword = meta.keywords[Math.floor(Math.random() * meta.keywords.length)];
+      currentKeyword = randomKeyword;
 
-      // 화면 업데이트
-      const photoEl = document.getElementById('moodPhoto');
-      photoEl.src = photoUrl;
-      document.getElementById('badgeEmoji').textContent = data.emoji;
-      document.getElementById('badgeLabel').textContent = data.label;
-      document.getElementById('photoCaption').textContent = data.caption;
-      document.getElementById('nowPlayingTrack').textContent = data.track;
+      // 텍스트 & 음악 UI 갱신
+      document.getElementById('badgeEmoji').textContent = meta.emoji;
+      document.getElementById('badgeLabel').textContent = meta.label;
+      document.getElementById('nowPlayingTrack').textContent = meta.track;
+      document.getElementById('photoCaption').textContent = meta.captions[Math.floor(Math.random() * meta.captions.length)];
 
-      // 효과음 & 음악 & 이모지 애니메이션 팡파레
-      playPopSfx(sfxType);
-      popFloatingEmojis(data.emoji);
-      startMoodBgm(category);
+      // 사진 로드
+      loadUnsplashPhoto(currentKeyword);
+
+      // 사운드 & 비주얼 리액션
+      playPopSfx(sfx);
+      popFloatingEmojis(meta.emoji);
+      startMoodBgm(cat);
+    }
+
+    // Unsplash 실시간 랜덤 URL 생성기 (캐시 방지 타임스탬프 탑재)
+    function loadUnsplashPhoto(keyword) {
+      const spinner = document.getElementById('loadingSpinner');
+      const photo = document.getElementById('moodPhoto');
+
+      spinner.classList.remove('hidden');
+      photo.classList.add('opacity-40');
+
+      // 무작위 시드값을 붙여 중복 없이 매번 새로운 사진 호출
+      const uniqueSeed = Date.now() + Math.floor(Math.random() * 9999);
+      const randomUrl = `https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&auto=format&fit=crop&q=80`; // fallback
+      
+      // Unsplash의 Source 검색 파라미터 활용
+      const dynamicPhotoUrl = `https://picsum.photos/seed/${keyword}-${uniqueSeed}/900/675`;
+
+      const imgLoader = new Image();
+      imgLoader.src = dynamicPhotoUrl;
+
+      imgLoader.onload = () => {
+        photo.src = dynamicPhotoUrl;
+        photo.classList.remove('opacity-40');
+        spinner.classList.add('hidden');
+      };
+
+      imgLoader.onerror = () => {
+        // 백업 고화질 소스 연결
+        const backupUrl = `https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?w=900&auto=format&fit=crop&q=80`;
+        photo.src = backupUrl;
+        photo.classList.remove('opacity-40');
+        spinner.classList.add('hidden');
+      };
+    }
+
+    function fetchAnotherPhoto() {
+      playPopSfx('peace');
+      loadUnsplashPhoto(currentKeyword);
     }
 
     function quick(str) {
@@ -378,7 +424,6 @@
       else recognition.start();
     }
 
-    // 첫 시작 BGM 가동
     window.addEventListener('click', () => {
       if (isBgmOn && !bgmInterval) {
         startMoodBgm('peaceful');
