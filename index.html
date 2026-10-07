@@ -108,3 +108,282 @@
       <button onclick="quick('비 오고 쓸쓸해')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-blue-300 text-xs font-bold py-2 rounded-xl active:scale-95">🌧️ 쓸쓸</button>
       <button onclick="quick('화나고 짜증나')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-300 text-xs font-bold py-2 rounded-xl active:scale-95">🔥 폭발</button>
     </div>
+  </footer>
+
+  <script>
+    // --- 고품질 Web Audio 실시간 음악 & 효과음 합성 엔진 ---
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+    let bgmInterval = null;
+    let isBgmOn = true;
+    let currentMood = 'peaceful';
+
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new AudioCtx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    // 통통 튀는 효과음 (선택 시 팡파레)
+    function playPopSfx(type) {
+      try {
+        const ctx = getAudioCtx();
+        const now = ctx.currentTime;
+        if (type === 'happy') {
+          // 기분 좋은 별가루 효과음
+          [523, 659, 783, 1046].forEach((f, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.frequency.setValueAtTime(f, now + i * 0.06);
+            gain.gain.setValueAtTime(0.2, now + i * 0.06);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.15);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + i * 0.06);
+            osc.stop(now + i * 0.06 + 0.16);
+          });
+        } else if (type === 'fire') {
+          // 묵직한 쿵 소리
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(160, now);
+          osc.frequency.exponentialRampToValueAtTime(40, now + 0.2);
+          gain.gain.setValueAtTime(0.4, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.22);
+        } else {
+          // 물방울 퐁
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(600, now);
+          osc.frequency.exponentialRampToValueAtTime(1100, now + 0.1);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.11);
+        }
+      } catch(e) {}
+    }
+
+    // 감정별 BGM 자동 연주기
+    function startMoodBgm(mood) {
+      currentMood = mood;
+      if (bgmInterval) clearInterval(bgmInterval);
+      if (!isBgmOn) return;
+
+      const ctx = getAudioCtx();
+      let step = 0;
+
+      // 무드별 코드 진행
+      const notesMap = {
+        happy: [523.25, 659.25, 783.99, 987.77, 1046.50, 783.99], // C Major 업비트
+        tired: [220.00, 261.63, 329.63, 392.00], // A Minor 슬로우 나른함
+        rain: [349.23, 392.00, 440.00, 523.25], // F Lydian 촉촉한 비
+        fire: [110.00, 130.81, 146.83, 164.81], // D Minor 베이스 펄스
+        peaceful: [261.63, 329.63, 392.00, 523.25] // C Pentatonic 평온
+      };
+
+      const tempo = mood === 'happy' ? 240 : (mood === 'fire' ? 180 : 650);
+
+      bgmInterval = setInterval(() => {
+        if (!isBgmOn) return;
+        const notes = notesMap[mood] || notesMap.peaceful;
+        const freq = notes[step % notes.length];
+        step++;
+
+        try {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = (mood === 'fire') ? 'triangle' : 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+          gain.gain.setValueAtTime(0.001, ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (tempo / 1000) * 0.9);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + (tempo / 1000));
+        } catch(e) {}
+      }, tempo);
+    }
+
+    function toggleBgm() {
+      isBgmOn = !isBgmOn;
+      const icon = document.getElementById('bgmIcon');
+      const text = document.getElementById('bgmBtnText');
+      const ind = document.getElementById('musicIndicator');
+
+      if (isBgmOn) {
+        icon.className = 'fa-solid fa-volume-high text-indigo-400';
+        text.textContent = '음악 끄기';
+        ind.classList.remove('opacity-30');
+        startMoodBgm(currentMood);
+      } else {
+        icon.className = 'fa-solid fa-volume-xmark text-slate-500';
+        text.textContent = '음악 켜기';
+        ind.classList.add('opacity-30');
+        if (bgmInterval) clearInterval(bgmInterval);
+      }
+    }
+
+    // --- Unsplash 실시간 무료 고화질 사진 풀 ---
+    const moodAssets = {
+      happy: {
+        photos: [
+          'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop&q=80', // 축제 파티
+          'https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?w=800&auto=format&fit=crop&q=80'  // 햇살 찬란한 꽃밭
+        ],
+        label: '찬란한 축제와 설렘',
+        emoji: '🎉',
+        track: '🎵 상큼하고 경쾌한 멜로디',
+        caption: '"온 세상이 당신을 축하하듯 반짝거리고 있어요!"'
+      },
+      tired: {
+        photos: [
+          'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?w=800&auto=format&fit=crop&q=80', // 아늑한 침대 조명
+          'https://images.unsplash.com/photo-1511497584788-87676104235f?w=800&auto=format&fit=crop&q=80'  // 고요한 숲속 안개
+        ],
+        label: '깊은 휴식의 쉼터',
+        emoji: '🛌',
+        track: '🎵 나른한 꿀잠 앰비언트',
+        caption: '"오늘도 치열하게 달린 당신, 지금은 푹 쉬어도 돼요."'
+      },
+      rain: {
+        photos: [
+          'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=800&auto=format&fit=crop&q=80', // 창가 빗방울
+          'https://images.unsplash.com/photo-1501999635878-71cb5379c2d8?w=800&auto=format&fit=crop&q=80'  // 촉촉한 비 내리는 숲
+        ],
+        label: '마음을 씻는 촉촉한 빗소리',
+        emoji: '🌧️',
+        track: '🎵 빗방울 물방울 피아노',
+        caption: '"소나기가 지나가면 맑은 하늘이 올 거예요."'
+      },
+      fire: {
+        photos: [
+          'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800&auto=format&fit=crop&q=80', // 강렬한 노을과 산
+          'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?w=800&auto=format&fit=crop&q=80'  // 타오르는 캠핑 불꽃
+        ],
+        label: '열정과 정화의 불꽃',
+        emoji: '🔥',
+        track: '🎵 심장을 울리는 파워 비트',
+        caption: '"답답한 건 여기에 다 태워버려요. 후련해질 때까지!"'
+      },
+      peaceful: {
+        photos: [
+          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80', // 에메랄드 바다
+          'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&auto=format&fit=crop&q=80'  // 햇살 가득한 숲길
+        ],
+        label: '평온한 햇살 바다',
+        emoji: '🌿',
+        track: '🎵 잔잔한 바람의 선율',
+        caption: '"바람 따라 구름 따라, 마음이 한결 가벼워집니다."'
+      }
+    };
+
+    function popFloatingEmojis(emoji) {
+      const container = document.getElementById('floatingEmojiContainer');
+      container.innerHTML = '';
+      for (let i = 0; i < 6; i++) {
+        const span = document.createElement('span');
+        span.className = 'text-3xl emoji-pop absolute';
+        span.style.left = (35 + Math.random() * 30) + '%';
+        span.style.animationDelay = (i * 0.15) + 's';
+        span.textContent = emoji;
+        container.appendChild(span);
+      }
+    }
+
+    function applyMood() {
+      const text = document.getElementById('moodInput').value.trim();
+      if (!text) {
+        alert('기분을 한마디 적어주세요!');
+        return;
+      }
+
+      let category = 'peaceful';
+      let sfxType = 'peace';
+
+      if (/행복|설레|신나|기뻐|즐거|최고|사랑|웃음/g.test(text)) {
+        category = 'happy';
+        sfxType = 'happy';
+      } else if (/피곤|지쳐|힘들|자고|쉬고|방전|졸려/g.test(text)) {
+        category = 'tired';
+        sfxType = 'peace';
+      } else if (/슬퍼|눈물|울적|외로|쓸쓸|비|그리워/g.test(text)) {
+        category = 'rain';
+        sfxType = 'peace';
+      } else if (/화나|짜증|답답|열받|미치|분노|폭발/g.test(text)) {
+        category = 'fire';
+        sfxType = 'fire';
+      }
+
+      const data = moodAssets[category];
+      const photoUrl = data.photos[Math.floor(Math.random() * data.photos.length)];
+
+      // 화면 업데이트
+      const photoEl = document.getElementById('moodPhoto');
+      photoEl.src = photoUrl;
+      document.getElementById('badgeEmoji').textContent = data.emoji;
+      document.getElementById('badgeLabel').textContent = data.label;
+      document.getElementById('photoCaption').textContent = data.caption;
+      document.getElementById('nowPlayingTrack').textContent = data.track;
+
+      // 효과음 & 음악 & 이모지 애니메이션 팡파레
+      playPopSfx(sfxType);
+      popFloatingEmojis(data.emoji);
+      startMoodBgm(category);
+    }
+
+    function quick(str) {
+      document.getElementById('moodInput').value = str;
+      applyMood();
+    }
+
+    // 마이크 STT
+    let isListening = false;
+    let recognition = null;
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new Speech();
+      recognition.lang = 'ko-KR';
+      recognition.onstart = () => {
+        isListening = true;
+        document.getElementById('micBtn').className = 'w-12 bg-rose-600 text-white border border-rose-500 rounded-2xl flex items-center justify-center animate-pulse';
+      };
+      recognition.onresult = (e) => {
+        document.getElementById('moodInput').value = e.results[0][0].transcript;
+        applyMood();
+      };
+      recognition.onend = () => {
+        isListening = false;
+        document.getElementById('micBtn').className = 'w-12 bg-slate-800 hover:bg-slate-700 text-rose-400 border border-slate-700 rounded-2xl flex items-center justify-center active:scale-95 transition shadow-sm';
+      };
+    }
+
+    function toggleSpeech() {
+      if (!recognition) {
+        alert('이 브라우저는 음성 인식을 지원하지 않습니다. 텍스트로 적어주세요!');
+        return;
+      }
+      if (isListening) recognition.stop();
+      else recognition.start();
+    }
+
+    // 첫 시작 BGM 가동
+    window.addEventListener('click', () => {
+      if (isBgmOn && !bgmInterval) {
+        startMoodBgm('peaceful');
+      }
+    }, { once: true });
+  </script>
+</body>
+</html>
