@@ -4,356 +4,107 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>마음 날씨 캔버스 🎨</title>
+  <title>기분 찰칵 & 뮤직 라운지 📸🎵</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;900&display=swap');
     body {
       font-family: 'Noto Sans KR', sans-serif;
       touch-action: manipulation;
     }
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(0.8); opacity: 1; }
+      100% { transform: translateY(-70px) scale(1.3); opacity: 0; }
+    }
+    .emoji-pop {
+      animation: floatUp 1.2s ease-out forwards;
+    }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-between p-4 select-none pb-8">
+<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-4 select-none pb-8 overflow-x-hidden">
 
   <!-- 헤더 영역 -->
   <header class="w-full max-w-sm text-center pt-2">
-    <div class="inline-block bg-indigo-950/80 text-indigo-300 text-xs font-bold px-3 py-1 rounded-full mb-1 border border-indigo-800/60 shadow-sm">
-      🎨 감정 시각화 아트 스튜디오
+    <div class="inline-block bg-gradient-to-r from-rose-900 to-indigo-900 text-rose-300 text-xs font-bold px-3.5 py-1 rounded-full mb-1 border border-rose-700/50 shadow-sm">
+      📸 실시간 포토 & 감정 사운드트랙
     </div>
-    <h1 class="text-2xl font-black text-white">마음 날씨 캔버스</h1>
-    <p class="text-xs text-slate-400 mt-1">지금 기분을 말하거나 쓰면 그림으로 그려드려요</p>
+    <h1 class="text-2xl font-black text-rose-100 flex items-center justify-center gap-1.5">
+      기분 찰칵 뮤직 캔버스 🎵
+    </h1>
+    <p class="text-xs text-slate-400 mt-1">지금 기분을 말하면 사진과 음악이 흘러나와요</p>
   </header>
 
-  <!-- 메인 캔버스 디스플레이 카드 -->
-  <main class="w-full max-w-sm my-auto flex flex-col items-center">
+  <!-- 메인 사진 액자 & 음악 컨트롤러 -->
+  <main class="w-full max-w-sm my-auto flex flex-col items-center relative">
     
-    <!-- 액자 형태의 캔버스 뷰 -->
-    <div class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-2 border-slate-700 bg-slate-900 flex items-center justify-center">
-      <canvas id="moodCanvas" class="w-full h-full"></canvas>
+    <!-- 사진 뷰포트 -->
+    <div class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-2 border-slate-700 bg-slate-900 flex items-center justify-center group">
+      <!-- 배경 사진 -->
+      <img id="moodPhoto" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80" 
+           alt="기분 사진" class="w-full h-full object-cover transition-transform duration-700">
       
-      <!-- 캔버스 위에 뜨는 감정 오버레이 배지 -->
-      <div id="moodBadge" class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 text-xs font-bold text-white hidden">
-        ✨ <span id="moodLabel">행복함</span>
+      <!-- 오버레이 그라데이션 -->
+      <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+
+      <!-- 상단 감정 뱃지 -->
+      <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 text-xs font-bold flex items-center gap-1.5 shadow-md">
+        <span id="badgeEmoji">🏖️</span>
+        <span id="badgeLabel">평화로운 바다</span>
+      </div>
+
+      <!-- 음악 재생 중 표시등 (우측 상단) -->
+      <div id="musicIndicator" class="absolute top-3 right-3 bg-emerald-950/80 border border-emerald-500/60 px-2.5 py-1 rounded-full text-[10px] font-bold text-emerald-300 flex items-center gap-1.5 shadow-md">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        <span id="musicStateText">BGM 연주 중</span>
+      </div>
+
+      <!-- 사진 위로 솟아오르는 이모지 컨테이너 -->
+      <div id="floatingEmojiContainer" class="absolute inset-0 pointer-events-none flex items-center justify-center"></div>
+
+      <!-- 하단 문구 -->
+      <div class="absolute bottom-3 inset-x-3 text-center">
+        <p id="photoCaption" class="text-xs font-black text-rose-200 drop-shadow-md">
+          "지금 이 순간, 당신의 마음에 꼭 맞는 풍경을 담았어요."
+        </p>
       </div>
     </div>
 
-    <!-- 따뜻한 한 줄 공감 메시지 -->
-    <div id="quoteCard" class="w-full bg-slate-900/90 border border-slate-800 p-3.5 rounded-2xl text-center shadow-lg mt-3 transition duration-300 min-h-[58px] flex items-center justify-center">
-      <p id="quoteText" class="text-xs font-semibold text-indigo-200">
-        "어떤 마음이어도 괜찮아요. 지금의 기분을 들려주세요."
-      </p>
+    <!-- 오디오 제어 버튼 바 -->
+    <div class="w-full flex items-center justify-between mt-2.5 px-2">
+      <span id="nowPlayingTrack" class="text-xs text-indigo-300 font-bold truncate max-w-[200px]">
+        🎵 평온의 멜로디
+      </span>
+      <button onclick="toggleBgm()" class="text-xs bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-300 px-3 py-1 rounded-xl active:scale-95 transition flex items-center gap-1.5">
+        <i id="bgmIcon" class="fa-solid fa-volume-high text-indigo-400"></i>
+        <span id="bgmBtnText">음악 끄기</span>
+      </button>
     </div>
 
-    <!-- 기분 입력 컨트롤 (텍스트 + 음성인식 마이크) -->
-    <div class="w-full mt-4 flex flex-col gap-2">
+    <!-- 입력부 (텍스트 + 음성인식 마이크) -->
+    <div class="w-full mt-3 flex flex-col gap-2">
       <div class="flex gap-2">
-        <input id="moodInput" type="text" placeholder="예: 오늘따라 조금 쓸쓸하고 피곤해" 
-               class="flex-1 bg-slate-900 border border-slate-700 rounded-2xl px-3.5 py-3 text-xs font-bold text-white outline-none focus:border-indigo-500 shadow-inner">
-        
-        <!-- 마이크 버튼 (음성인식) -->
-        <button id="micBtn" onclick="toggleSpeech()" class="w-12 bg-slate-800 hover:bg-slate-700 text-indigo-400 border border-slate-700 rounded-2xl flex items-center justify-center active:scale-95 transition shadow-sm">
+        <input id="moodInput" type="text" placeholder="예: 오늘따라 신나고 설레! or 너무 피곤해" 
+               class="flex-1 bg-slate-900 border border-slate-700 rounded-2xl px-3.5 py-3 text-xs font-bold text-white outline-none focus:border-rose-500 shadow-inner">
+        <button id="micBtn" onclick="toggleSpeech()" class="w-12 bg-slate-800 hover:bg-slate-700 text-rose-400 border border-slate-700 rounded-2xl flex items-center justify-center active:scale-95 transition shadow-sm">
           <i class="fa-solid fa-microphone text-base"></i>
         </button>
       </div>
 
-      <!-- 그림 그리기 메인 버튼 -->
-      <div class="flex gap-2">
-        <button onclick="generateMoodArt()" class="flex-1 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black text-sm rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-95 transition">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <span>그림으로 나타내기</span>
-        </button>
-        <button onclick="downloadImage()" class="px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-2xl border border-slate-700 flex items-center justify-center gap-1 active:scale-95 transition">
-          <i class="fa-solid fa-download"></i>
-          <span>저장</span>
-        </button>
-      </div>
+      <button onclick="applyMood()" class="w-full py-4 bg-gradient-to-r from-rose-600 via-pink-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white font-black text-sm rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-95 transition">
+        <i class="fa-solid fa-camera-retro text-lg"></i>
+        <span>사진 & 음악 매칭하기!</span>
+      </button>
     </div>
 
   </main>
 
-  <!-- 빠른 감정 프리셋 태그 -->
+  <!-- 빠른 감정 버튼들 -->
   <footer class="w-full max-w-sm pt-2">
-    <div class="flex items-center justify-between mb-1.5 px-1">
-      <span class="text-[11px] font-bold text-slate-400">빠른 감정 선택:</span>
+    <div class="text-[11px] font-bold text-slate-400 mb-1.5 px-1">기분 바로 고르기:</div>
+    <div class="grid grid-cols-4 gap-1.5">
+      <button onclick="quick('행복하고 설레')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-rose-300 text-xs font-bold py-2 rounded-xl active:scale-95">🥰 설렘</button>
+      <button onclick="quick('피곤하고 지쳐')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-indigo-300 text-xs font-bold py-2 rounded-xl active:scale-95">🥱 지침</button>
+      <button onclick="quick('비 오고 쓸쓸해')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-blue-300 text-xs font-bold py-2 rounded-xl active:scale-95">🌧️ 쓸쓸</button>
+      <button onclick="quick('화나고 짜증나')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-300 text-xs font-bold py-2 rounded-xl active:scale-95">🔥 폭발</button>
     </div>
-    <div class="flex flex-wrap gap-1.5">
-      <button onclick="quickSelect('행복하고 설레는 하루야')" class="text-xs bg-slate-900/80 hover:bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-xl text-rose-300 font-bold active:scale-95">🥰 행복·설렘</button>
-      <button onclick="quickSelect('마음이 잔잔하고 편안해')" class="text-xs bg-slate-900/80 hover:bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-xl text-emerald-300 font-bold active:scale-95">🌿 편안·평온</button>
-      <button onclick="quickSelect('조금 피곤하고 지쳤어')" class="text-xs bg-slate-900/80 hover:bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-xl text-blue-300 font-bold active:scale-95">🌧️ 피곤·지침</button>
-      <button onclick="quickSelect('생각이 많고 답답해')" class="text-xs bg-slate-900/80 hover:bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-xl text-amber-300 font-bold active:scale-95">🌫️ 답답·고민</button>
-    </div>
-  </footer>
-
-  <script>
-    const canvas = document.getElementById('moodCanvas');
-    const ctx = canvas.getContext('2d');
-    let isListening = false;
-    let recognition = null;
-
-    // 모바일/PC 해상도 대응
-    function resizeCanvas() {
-      const rect = canvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
-    }
-
-    // --- 음성 인식 (STT) 지원 ---
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
-      recognition.lang = 'ko-KR';
-      recognition.continuous = false;
-
-      recognition.onstart = () => {
-        isListening = true;
-        document.getElementById('micBtn').className = 'w-12 bg-rose-600 text-white border border-rose-500 rounded-2xl flex items-center justify-center animate-pulse';
-      };
-
-      recognition.onresult = (event) => {
-        const text = event.results[0][0].transcript;
-        document.getElementById('moodInput').value = text;
-        generateMoodArt();
-      };
-
-      recognition.onend = () => {
-        isListening = false;
-        document.getElementById('micBtn').className = 'w-12 bg-slate-800 hover:bg-slate-700 text-indigo-400 border border-slate-700 rounded-2xl flex items-center justify-center active:scale-95 transition shadow-sm';
-      };
-    }
-
-    function toggleSpeech() {
-      if (!recognition) {
-        alert('이 브라우저는 음성 인식을 지원하지 않습니다. 텍스트로 입력해 주세요!');
-        return;
-      }
-      if (isListening) {
-        recognition.stop();
-      } else {
-        recognition.start();
-      }
-    }
-
-    function quickSelect(text) {
-      document.getElementById('moodInput').value = text;
-      generateMoodArt();
-    }
-
-    // --- 감정 분석 및 아트 테마 생성 ---
-    function generateMoodArt() {
-      const text = document.getElementById('moodInput').value.trim();
-      if (!text) {
-        alert('오늘의 기분이나 한마디를 적어주세요!');
-        return;
-      }
-
-      // 키워드 분석
-      let theme = 'peaceful'; // 기본
-      let label = '잔잔하고 평화로움';
-      let quote = '"잔잔한 호수처럼 마음이 고요하고 평온해지는 순간입니다."';
-
-      if (/행복|기분|좋아|설레|신나|기뻐|즐거|사랑|최고/g.test(text)) {
-        theme = 'joy';
-        label = '화사한 설렘';
-        quote = '"따스한 햇살처럼 온 세상이 환하게 빛나고 있어요. 오늘을 맘껏 즐겨요!"';
-      } else if (/슬퍼|눈물|울적|외로|쓸쓸|비|그리워|허전/g.test(text)) {
-        theme = 'sad';
-        label = '비 내리는 센치한 밤';
-        quote = '"때로는 촉촉한 비가 내리듯 마음을 씻어내는 시간이 필요해요. 토닥토닥."';
-      } else if (/피곤|지쳐|힘들|쉬고|자고|귀찮|방전/g.test(text)) {
-        theme = 'tired';
-        label = '깊은 밤의 휴식';
-        quote = '"오늘 정말 수고 많았어요. 모든 짐을 내려놓고 깊은 숲에서 푹 쉬어요."';
-      } else if (/화나|짜증|답답|열받|미치|불안|고민/g.test(text)) {
-        theme = 'stress';
-        label = '붉은 노을의 정화';
-        quote = '"타오르는 노을이 답답함을 삼켜줄 거예요. 깊게 숨을 들이마시고 내쉬어보세요."';
-      }
-
-      // 뱃지 및 공감 문구 업데이트
-      document.getElementById('moodBadge').classList.remove('hidden');
-      document.getElementById('moodLabel').textContent = label;
-      document.getElementById('quoteText').textContent = quote;
-
-      // 캔버스 그리기
-      drawTheme(theme);
-    }
-
-    function drawTheme(theme) {
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
-
-      ctx.clearRect(0, 0, w, h);
-
-      if (theme === 'joy') {
-        // [화사한 설렘]: 핑크빛 노을과 찬란한 태양
-        const grad = ctx.createLinearGradient(0, 0, 0, h);
-        grad.addColorStop(0, '#FF758C');
-        grad.addColorStop(0.5, '#FF7EB3');
-        grad.addColorStop(1, '#FED061');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
-
-        // 태양
-        ctx.save();
-        ctx.shadowColor = '#FFF';
-        ctx.shadowBlur = 30;
-        ctx.fillStyle = '#FFFFFF';
-        ctx.beginPath();
-        ctx.arc(w * 0.7, h * 0.35, 32, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-
-        // 둥실거리는 구름
-        drawCloud(w * 0.3, h * 0.5, 35, 'rgba(255,255,255,0.7)');
-        drawCloud(w * 0.75, h * 0.65, 45, 'rgba(255,255,255,0.6)');
-      } 
-      else if (theme === 'sad') {
-        // [비 내리는 센치한 밤]: 짙은 블루와 빗줄기
-        const grad = ctx.createLinearGradient(0, 0, 0, h);
-        grad.addColorStop(0, '#141E30');
-        grad.addColorStop(1, '#243B55');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
-
-        // 빗줄기
-        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-        ctx.lineWidth = 1.5;
-        for (let i = 0; i < 45; i++) {
-          let rx = Math.random() * w;
-          let ry = Math.random() * h;
-          ctx.beginPath();
-          ctx.moveTo(rx, ry);
-          ctx.lineTo(rx - 8, ry + 22);
-          ctx.stroke();
-        }
-
-        // 잔잔한 호수 실루엣
-        ctx.fillStyle = '#0F172A';
-        ctx.beginPath();
-        ctx.moveTo(0, h * 0.75);
-        ctx.bezierCurveTo(w * 0.3, h * 0.7, w * 0.7, h * 0.8, w, h * 0.73);
-        ctx.lineTo(w, h);
-        ctx.lineTo(0, h);
-        ctx.fill();
-      } 
-      else if (theme === 'tired') {
-        // [깊은 밤의 휴식]: 숲과 은은한 초승달
-        const grad = ctx.createLinearGradient(0, 0, 0, h);
-        grad.addColorStop(0, '#060B19');
-        grad.addColorStop(1, '#1A2942');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
-
-        // 반짝이는 별들
-        ctx.fillStyle = '#FFFFFF';
-        for (let i = 0; i < 30; i++) {
-          ctx.globalAlpha = Math.random() * 0.8 + 0.2;
-          ctx.beginPath();
-          ctx.arc(Math.random() * w, Math.random() * (h * 0.6), Math.random() * 1.5, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.globalAlpha = 1.0;
-
-        // 초승달
-        ctx.save();
-        ctx.fillStyle = '#FDE68A';
-        ctx.shadowColor = '#FDE68A';
-        ctx.shadowBlur = 20;
-        ctx.beginPath();
-        ctx.arc(w * 0.78, h * 0.28, 22, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#060B19';
-        ctx.beginPath();
-        ctx.arc(w * 0.74, h * 0.25, 20, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-
-        // 아늑한 숲 능선
-        drawMountain(w, h, '#07101E', 0.65);
-        drawMountain(w, h, '#03070E', 0.8);
-      } 
-      else if (theme === 'stress') {
-        // [붉은 노을의 정화]: 보랏빛과 강렬한 오렌지 석양
-        const grad = ctx.createLinearGradient(0, 0, 0, h);
-        grad.addColorStop(0, '#4A0E4E');
-        grad.addColorStop(0.5, '#87103F');
-        grad.addColorStop(1, '#FF6B35');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
-
-        // 거대한 노을 해
-        ctx.save();
-        ctx.fillStyle = 'rgba(255, 230, 110, 0.85)';
-        ctx.shadowColor = '#FF6B35';
-        ctx.shadowBlur = 40;
-        ctx.beginPath();
-        ctx.arc(w * 0.5, h * 0.65, 50, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-
-        // 바다 수평선
-        ctx.fillStyle = 'rgba(20, 5, 25, 0.9)';
-        ctx.fillRect(0, h * 0.75, w, h * 0.25);
-      } 
-      else {
-        // [잔잔한 평화]: 청량한 에메랄드 하늘과 언덕
-        const grad = ctx.createLinearGradient(0, 0, 0, h);
-        grad.addColorStop(0, '#56CCF2');
-        grad.addColorStop(1, '#2F80ED');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
-
-        // 푸른 언덕
-        ctx.fillStyle = '#27AE60';
-        ctx.beginPath();
-        ctx.moveTo(0, h * 0.8);
-        ctx.quadraticCurveTo(w * 0.4, h * 0.65, w, h * 0.85);
-        ctx.lineTo(w, h);
-        ctx.lineTo(0, h);
-        ctx.fill();
-
-        drawCloud(w * 0.25, h * 0.3, 28, 'rgba(255,255,255,0.8)');
-      }
-    }
-
-    function drawCloud(x, y, r, color) {
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.arc(x + r * 0.6, y - r * 0.2, r * 0.8, 0, Math.PI * 2);
-      ctx.arc(x + r * 1.2, y, r * 0.9, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    function drawMountain(w, h, color, heightRatio) {
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.moveTo(0, h);
-      ctx.lineTo(0, h * heightRatio);
-      ctx.bezierCurveTo(w * 0.25, h * (heightRatio - 0.15), w * 0.5, h * (heightRatio + 0.1), w, h * heightRatio);
-      ctx.lineTo(w, h);
-      ctx.fill();
-    }
-
-    // 갤러리 이미지 저장
-    function downloadImage() {
-      const link = document.createElement('a');
-      link.download = '내마음_날씨_' + new Date().toISOString().slice(0,10) + '.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    }
-
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('load', () => {
-      resizeCanvas();
-      drawTheme('peaceful'); // 초기 로드 기본 아트
-    });
-    setTimeout(resizeCanvas, 100);
-  </script>
-</body>
-</html>
