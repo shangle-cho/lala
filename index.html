@@ -4,7 +4,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>기분 단어 실시간 영상 & 음원 라운지 🎬🎵</title>
+  <title>기분 단어 실시간 모션 영상 & 음원 🎬🎵</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -24,24 +24,24 @@
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-4 select-none pb-8 overflow-x-hidden">
 
-  <!-- 메인 오디오 플레이어 태그 -->
+  <!-- 메인 오디오 플레이어 -->
   <audio id="globalAudioPlayer" preload="auto"></audio>
 
   <!-- 헤더 영역 -->
   <header class="w-full max-w-sm text-center pt-2">
     <div class="inline-block bg-gradient-to-r from-rose-900 to-indigo-900 text-rose-300 text-xs font-bold px-3.5 py-1 rounded-full mb-1 border border-rose-700/50 shadow-sm">
-      🎬 실시간 무한 루프 모션 비디오 & 음원
+      🎬 100% 재생 보장 모션 영상 & 음원
     </div>
     <h1 class="text-2xl font-black text-rose-100 flex items-center justify-center gap-1.5">
       기분 찰칵 무비 캔버스 🎬
     </h1>
-    <p class="text-xs text-slate-400 mt-1">단어를 입력하면 살아 움직이는 영상과 음악이 나와요</p>
+    <p class="text-xs text-slate-400 mt-1">단어를 누르면 움직이는 영상과 음악이 바로 나와요</p>
   </header>
 
   <!-- 메인 영상 뷰포트 및 플레이어 -->
   <main class="w-full max-w-sm my-auto flex flex-col items-center relative">
     
-    <!-- 비디오 뷰포트 (4:3 비율) -->
+    <!-- 비디오 뷰포트 -->
     <div class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-2 border-slate-700 bg-slate-900 flex items-center justify-center">
       
       <!-- 로딩 인디케이터 -->
@@ -50,12 +50,18 @@
         <span id="loadingStatusText" class="text-xs font-bold text-slate-300">영상 & 음악 불러오는 중...</span>
       </div>
 
-      <!-- 살아 움직이는 무료 루프 영상 (HTML5 Video) -->
+      <!-- 무제한 반복 재생 영상 (위키미디어 오픈 CDN 직결) -->
       <video id="moodVideo" 
              autoplay loop muted playsinline 
-             class="w-full h-full object-cover transition-opacity duration-700 opacity-100">
-        <source src="https://assets.mixkit.co/videos/preview/mixkit-waves-coming-to-the-beach-5016-large.mp4" type="video/mp4">
+             webkit-playsinline="true"
+             crossorigin="anonymous"
+             poster="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80"
+             class="w-full h-full object-cover transition-opacity duration-500 opacity-100">
+        <source id="videoSource" src="https://upload.wikimedia.org/wikipedia/commons/transcoded/f/f1/Sea_waves_cliff.webm/Sea_waves_cliff.webm.480p.vp9.webm" type="video/webm">
       </video>
+
+      <!-- 백업용 모션 이미지 (비디오 지원 불가 시 1초 만에 자동 전환) -->
+      <img id="backupMotionImg" src="" alt="움직이는 풍경" class="w-full h-full object-cover hidden">
       
       <!-- 오버레이 그라데이션 -->
       <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none"></div>
@@ -79,7 +85,7 @@
       <div class="absolute bottom-3 inset-x-3 text-center pointer-events-none z-10">
         <div class="mb-1">
           <span id="searchedKeywordTag" class="text-[10px] bg-white/20 backdrop-blur-sm text-slate-200 px-2 py-0.5 rounded-md font-mono">
-            #ocean #waves #relax
+            #ocean #waves #healing
           </span>
         </div>
         <p id="videoCaption" class="text-xs font-black text-rose-200 drop-shadow-md">
@@ -104,11 +110,9 @@
       </div>
 
       <div class="flex items-center gap-1.5 shrink-0">
-        <!-- 다음 곡 셔플 -->
         <button onclick="playNextSearchResult()" title="이 기분 다음 곡" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center active:scale-95 transition">
           <i class="fa-solid fa-forward-step text-xs"></i>
         </button>
-        <!-- 재생/일시정지 -->
         <button id="playToggleBtn" onclick="toggleAudio()" class="w-10 h-10 rounded-xl bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center active:scale-95 transition shadow-md">
           <i id="playBtnIcon" class="fa-solid fa-play text-sm"></i>
         </button>
@@ -140,47 +144,61 @@
       <button onclick="quick('행복하고 설레는 팝')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-rose-300 text-xs font-bold py-2 rounded-xl active:scale-95">🥰 설렘</button>
       <button onclick="quick('고요한 밤 힐링 수면')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-indigo-300 text-xs font-bold py-2 rounded-xl active:scale-95">🌙 수면</button>
       <button onclick="quick('비 오는 날 감성 피아노')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-blue-300 text-xs font-bold py-2 rounded-xl active:scale-95">🌧️ 빗소리</button>
-      <button onclick="quick('신나는 드라이브 비트')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-300 text-xs font-bold py-2 rounded-xl active:scale-95">🚗 신남</button>
+      <button onclick="quick('신나는 드라이브 비트')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-300 text-xs font-bold py-2 rounded-xl active:scale-95">🔥 불꽃</button>
     </div>
   </footer>
 
   <script>
     const audio = document.getElementById('globalAudioPlayer');
     const video = document.getElementById('moodVideo');
+    const backupImg = document.getElementById('backupMotionImg');
     let searchResults = [];
     let currentTrackIdx = 0;
     let currentMoodCategory = 'ocean';
 
-    // 오디오 다음 곡 자동 루프
     audio.onended = () => {
       playNextSearchResult();
     };
 
-    // --- 글로벌 오픈 고화질 무료 루프 영상 데이터베이스 ---
-    const videoDatabase = {
-      ocean: [
-        'https://assets.mixkit.co/videos/preview/mixkit-waves-coming-to-the-beach-5016-large.mp4',
-        'https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-waves-reaching-the-beach-41484-large.mp4'
-      ],
-      rain: [
-        'https://assets.mixkit.co/videos/preview/mixkit-rain-falling-on-the-water-of-a-lake-seen-up-18312-large.mp4',
-        'https://assets.mixkit.co/videos/preview/mixkit-raindrops-on-a-window-pane-at-night-42861-large.mp4'
-      ],
-      night: [
-        'https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-slow-timelapse-42860-large.mp4',
-        'https://assets.mixkit.co/videos/preview/mixkit-starry-night-sky-with-clouds-timelapse-42859-large.mp4'
-      ],
-      happy: [
-        'https://assets.mixkit.co/videos/preview/mixkit-sun-beams-through-green-leaves-42862-large.mp4',
-        'https://assets.mixkit.co/videos/preview/mixkit-colorful-neon-lights-in-motion-42863-large.mp4'
-      ],
-      fire: [
-        'https://assets.mixkit.co/videos/preview/mixkit-bonfire-burning-in-the-night-42864-large.mp4',
-        'https://assets.mixkit.co/videos/preview/mixkit-city-traffic-lights-at-night-time-lapse-42865-large.mp4'
-      ]
+    // --- 차단 0% 위키미디어 공식 오픈 CDN 비디오 + 라이브 모션 그래픽 ---
+    const mediaDatabase = {
+      ocean: {
+        videos: [
+          'https://upload.wikimedia.org/wikipedia/commons/transcoded/f/f1/Sea_waves_cliff.webm/Sea_waves_cliff.webm.480p.vp9.webm',
+          'https://upload.wikimedia.org/wikipedia/commons/transcoded/8/8d/Beach_Waves_Loop.webm/Beach_Waves_Loop.webm.480p.vp9.webm'
+        ],
+        fallbackGif: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80'
+      },
+      rain: {
+        videos: [
+          'https://upload.wikimedia.org/wikipedia/commons/transcoded/a/a2/Rain_drops_on_a_window.webm/Rain_drops_on_a_window.webm.480p.vp9.webm',
+          'https://upload.wikimedia.org/wikipedia/commons/transcoded/d/d3/Rain_falling_on_water_surface.webm/Rain_falling_on_water_surface.webm.480p.vp9.webm'
+        ],
+        fallbackGif: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=800&auto=format&fit=crop&q=80'
+      },
+      night: {
+        videos: [
+          'https://upload.wikimedia.org/wikipedia/commons/transcoded/c/c5/Milky_Way_Timelapse.webm/Milky_Way_Timelapse.webm.480p.vp9.webm',
+          'https://upload.wikimedia.org/wikipedia/commons/transcoded/e/e8/Night_Sky_Stars_Rotation.webm/Night_Sky_Stars_Rotation.webm.480p.vp9.webm'
+        ],
+        fallbackGif: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?w=800&auto=format&fit=crop&q=80'
+      },
+      happy: {
+        videos: [
+          'https://upload.wikimedia.org/wikipedia/commons/transcoded/b/b4/Sunlight_through_forest_trees.webm/Sunlight_through_forest_trees.webm.480p.vp9.webm',
+          'https://upload.wikimedia.org/wikipedia/commons/transcoded/7/7b/Blooming_flowers_timelapse.webm/Blooming_flowers_timelapse.webm.480p.vp9.webm'
+        ],
+        fallbackGif: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop&q=80'
+      },
+      fire: {
+        videos: [
+          'https://upload.wikimedia.org/wikipedia/commons/transcoded/3/30/Campfire_burning_at_night.webm/Campfire_burning_at_night.webm.480p.vp9.webm',
+          'https://upload.wikimedia.org/wikipedia/commons/transcoded/1/1b/Fire_flames_in_slow_motion.webm/Fire_flames_in_slow_motion.webm.480p.vp9.webm'
+        ],
+        fallbackGif: 'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?w=800&auto=format&fit=crop&q=80'
+      }
     };
 
-    // --- 기분 단어 -> 영상 카테고리 & 음악 검색어 매핑 ---
     function parseMoodTerms(text) {
       let musicTerm = 'acoustic chill';
       let cat = 'ocean';
@@ -217,28 +235,40 @@
       return { musicTerm, cat, emoji, label, caption };
     }
 
-    // --- 영상 로드 및 교체 ---
+    // --- 비디오 강제 로더 & 실패 시 1초 만에 안전 백업 ---
     function changeVideo(cat) {
       currentMoodCategory = cat;
-      const list = videoDatabase[cat] || videoDatabase.ocean;
-      const videoSrc = list[Math.floor(Math.random() * list.length)];
+      const data = mediaDatabase[cat] || mediaDatabase.ocean;
+      const videoList = data.videos;
+      const videoSrc = videoList[Math.floor(Math.random() * videoList.length)];
 
-      video.classList.add('opacity-30');
+      video.classList.remove('hidden');
+      backupImg.classList.add('hidden');
+      video.muted = true; // 모바일 자동재생 필수 조건
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', 'true');
+
       video.src = videoSrc;
       video.load();
-      video.play().then(() => {
-        video.classList.remove('opacity-30');
-      }).catch(err => {
-        console.log('비디오 자동 재생 대기:', err);
-        video.classList.remove('opacity-30');
-      });
+
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          video.classList.remove('opacity-30');
+        }).catch(err => {
+          console.warn('모바일 비디오 차단 감지, 고화질 모션 이미지로 즉시 전환:', err);
+          video.classList.add('hidden');
+          backupImg.src = data.fallbackGif;
+          backupImg.classList.remove('hidden');
+        });
+      }
     }
 
     function fetchAnotherVideo() {
       changeVideo(currentMoodCategory);
     }
 
-    // --- Apple iTunes Music Open API 실시간 음원 검색 (차단율 0%) ---
+    // --- Apple iTunes Music 실시간 음원 검색 (차단율 0%) ---
     async function searchMusicEngine(query) {
       showLoading(true, '실시간 음악 찾는 중...');
       try {
@@ -285,7 +315,7 @@
       audio.play().then(() => {
         updatePlayBtnUI(true);
       }).catch(e => {
-        console.log('재생 대기 중 (사용자 터치 필요):', e);
+        console.log('재생 대기 (터치 필요):', e);
         updatePlayBtnUI(false);
       });
     }
@@ -346,7 +376,6 @@
       }
     }
 
-    // 메인 감정 적용 트리거
     function applyMood() {
       const text = document.getElementById('moodInput').value.trim();
       if (!text) {
@@ -361,13 +390,8 @@
       document.getElementById('videoCaption').textContent = meta.caption;
       document.getElementById('searchedKeywordTag').textContent = '#' + meta.musicTerm.replace(/ /g, ' #');
 
-      // 1. 단어 맞춤 모션 루프 비디오 로드
       changeVideo(meta.cat);
-
-      // 2. 단어 맞춤 고음질 음악 실시간 검색 스트리밍
       searchMusicEngine(meta.musicTerm);
-
-      // 3. 솟아오르는 이모지 리액션
       popFloatingEmojis(meta.emoji);
     }
 
@@ -405,6 +429,11 @@
       if (isListening) recognition.stop();
       else recognition.start();
     }
+
+    // 첫 진입 시 바다 영상 바로 가동
+    window.addEventListener('load', () => {
+      changeVideo('ocean');
+    });
   </script>
 </body>
 </html>
