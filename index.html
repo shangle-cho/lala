@@ -4,7 +4,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>기분 단어 포토 & 무료 음원 플레이어 📸🎵</title>
+  <title>기분 단어 실시간 포토 & 음원 매칭 📸🎵</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -24,18 +24,18 @@
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-4 select-none pb-8 overflow-x-hidden">
 
-  <!-- 숨겨진 실제 HTML5 오디오 플레이어 -->
-  <audio id="realAudioPlayer" preload="auto" loop></audio>
+  <!-- 메인 오디오 플레이어 태그 -->
+  <audio id="globalAudioPlayer" preload="auto"></audio>
 
   <!-- 헤더 영역 -->
   <header class="w-full max-w-sm text-center pt-2">
     <div class="inline-block bg-gradient-to-r from-rose-900 to-indigo-900 text-rose-300 text-xs font-bold px-3.5 py-1 rounded-full mb-1 border border-rose-700/50 shadow-sm">
-      🎵 무료 음원 사이트 고음질 스트리밍
+      🎵 차단 없는 글로벌 음원 & 포토 검색
     </div>
     <h1 class="text-2xl font-black text-rose-100 flex items-center justify-center gap-1.5">
       기분 찰칵 뮤직 캔버스 📸
     </h1>
-    <p class="text-xs text-slate-400 mt-1">기분 단어에 맞는 무료 실사 사진 & 실제 음악</p>
+    <p class="text-xs text-slate-400 mt-1">단어를 입력하면 실시간으로 사진과 노래를 찾아 틀어줘요</p>
   </header>
 
   <!-- 메인 사진 액자 및 플레이어 -->
@@ -44,10 +44,10 @@
     <!-- 사진 뷰포트 -->
     <div class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-2 border-slate-700 bg-slate-900 flex items-center justify-center">
       
-      <!-- 사진 로딩 인디케이터 -->
-      <div id="loadingSpinner" class="absolute inset-0 bg-slate-900 flex flex-col items-center justify-center z-10 hidden">
-        <i class="fa-solid fa-spinner fa-spin text-3xl text-rose-400 mb-2"></i>
-        <span class="text-xs font-bold text-slate-400">사진 & 무료 음원 연결 중...</span>
+      <!-- 로딩 인디케이터 -->
+      <div id="loadingSpinner" class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm flex flex-col items-center justify-center z-30 hidden">
+        <i class="fa-solid fa-compact-disc fa-spin text-4xl text-rose-400 mb-2"></i>
+        <span id="loadingStatusText" class="text-xs font-bold text-slate-300">음악 & 사진 실시간 검색 중...</span>
       </div>
 
       <!-- 배경 사진 -->
@@ -60,13 +60,13 @@
       <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none"></div>
 
       <!-- 상단 감정 뱃지 -->
-      <div class="absolute top-3 left-3 bg-black/65 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 text-xs font-bold flex items-center gap-1.5 shadow-md">
+      <div class="absolute top-3 left-3 bg-black/65 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 text-xs font-bold flex items-center gap-1.5 shadow-md z-10">
         <span id="badgeEmoji">🌿</span>
         <span id="badgeLabel">평온한 쉼터</span>
       </div>
 
-      <!-- 사진 새로고침 셔플 버튼 -->
-      <button onclick="fetchAnotherPhoto()" title="이 단어로 다른 사진 보기" class="absolute top-3 right-3 bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/20 text-xs font-bold text-rose-200 px-2.5 py-1 rounded-full flex items-center gap-1 active:scale-95 transition shadow-md">
+      <!-- 사진 새로고침 버튼 -->
+      <button onclick="fetchAnotherPhoto()" title="이 단어로 다른 사진 보기" class="absolute top-3 right-3 bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/20 text-xs font-bold text-rose-200 px-2.5 py-1 rounded-full flex items-center gap-1 active:scale-95 transition shadow-md z-10">
         <i class="fa-solid fa-rotate text-[11px]"></i>
         <span>다른 사진</span>
       </button>
@@ -75,10 +75,10 @@
       <div id="floatingEmojiContainer" class="absolute inset-0 pointer-events-none flex items-center justify-center z-20"></div>
 
       <!-- 하단 문구 & 검색된 영문 키워드 태그 -->
-      <div class="absolute bottom-3 inset-x-3 text-center pointer-events-none">
+      <div class="absolute bottom-3 inset-x-3 text-center pointer-events-none z-10">
         <div class="mb-1">
           <span id="searchedKeywordTag" class="text-[10px] bg-white/20 backdrop-blur-sm text-slate-200 px-2 py-0.5 rounded-md font-mono">
-            #peaceful #healing
+            #peaceful #calm
           </span>
         </div>
         <p id="photoCaption" class="text-xs font-black text-rose-200 drop-shadow-md">
@@ -87,29 +87,37 @@
       </div>
     </div>
 
-    <!-- 실제 고음질 MP3 음원 제어 바 -->
+    <!-- 실시간 검색 음원 제어 바 -->
     <div class="w-full bg-slate-900/90 border border-slate-800 rounded-2xl p-3 mt-3 flex items-center justify-between shadow-lg">
-      <div class="flex items-center gap-2.5 truncate">
-        <div id="discIcon" class="w-9 h-9 rounded-full bg-indigo-950 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
-          <i class="fa-solid fa-music text-sm"></i>
-        </div>
+      <div class="flex items-center gap-2.5 truncate flex-1 mr-2">
+        <img id="albumArt" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=100&auto=format&fit=crop&q=80" 
+             alt="커버" class="w-10 h-10 rounded-xl object-cover border border-slate-700 shrink-0">
         <div class="truncate">
-          <span id="nowPlayingTrack" class="text-xs font-bold text-white block truncate">
-            잔잔하고 평화로운 자연 음원
+          <span id="nowPlayingTitle" class="text-xs font-bold text-white block truncate">
+            노래를 찾는 중...
           </span>
-          <span id="musicSourceTag" class="text-[10px] text-emerald-400 font-medium">무료 음원 사이트 연동 스트리밍</span>
+          <span id="nowPlayingArtist" class="text-[11px] text-slate-400 block truncate">
+            기분을 입력하면 재생돼요
+          </span>
         </div>
       </div>
 
-      <button id="playToggleBtn" onclick="toggleAudio()" class="w-10 h-10 rounded-xl bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center active:scale-95 transition shadow-md shrink-0">
-        <i id="playBtnIcon" class="fa-solid fa-play text-sm"></i>
-      </button>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <!-- 다음 곡 셔플 -->
+        <button onclick="playNextSearchResult()" title="이 기분 다음 곡" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center active:scale-95 transition">
+          <i class="fa-solid fa-forward-step text-xs"></i>
+        </button>
+        <!-- 재생/일시정지 -->
+        <button id="playToggleBtn" onclick="toggleAudio()" class="w-10 h-10 rounded-xl bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center active:scale-95 transition shadow-md">
+          <i id="playBtnIcon" class="fa-solid fa-play text-sm"></i>
+        </button>
+      </div>
     </div>
 
     <!-- 기분 입력부 (텍스트 + 마이크) -->
     <div class="w-full mt-3 flex flex-col gap-2">
       <div class="flex gap-2">
-        <input id="moodInput" type="text" placeholder="예: 비 오는 밤, 설렘, 쓸쓸해, 시원한 바다" 
+        <input id="moodInput" type="text" placeholder="예: 비 오는 밤, 설렘, 쓸쓸해, 재즈, 드라이브" 
                class="flex-1 bg-slate-900 border border-slate-700 rounded-2xl px-3.5 py-3 text-xs font-bold text-white outline-none focus:border-rose-500 shadow-inner">
         <button id="micBtn" onclick="toggleSpeech()" class="w-12 bg-slate-800 hover:bg-slate-700 text-rose-400 border border-slate-700 rounded-2xl flex items-center justify-center active:scale-95 transition shadow-sm">
           <i class="fa-solid fa-microphone text-base"></i>
@@ -117,8 +125,8 @@
       </div>
 
       <button onclick="applyMood()" class="w-full py-4 bg-gradient-to-r from-rose-600 via-pink-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white font-black text-sm rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-95 transition">
-        <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
-        <span>이 기분 단어로 사진 & 음원 틀기!</span>
+        <i class="fa-solid fa-magnifying-glass text-lg"></i>
+        <span>이 기분으로 사진 & 음악 검색!</span>
       </button>
     </div>
 
@@ -128,58 +136,143 @@
   <footer class="w-full max-w-sm pt-2">
     <div class="text-[11px] font-bold text-slate-400 mb-1.5 px-1">기분 단어 바로 터치:</div>
     <div class="grid grid-cols-4 gap-1.5">
-      <button onclick="quick('행복하고 설레')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-rose-300 text-xs font-bold py-2 rounded-xl active:scale-95">🥰 설렘</button>
-      <button onclick="quick('고요한 밤하늘 꿀잠')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-indigo-300 text-xs font-bold py-2 rounded-xl active:scale-95">🌙 밤하늘</button>
-      <button onclick="quick('비 내리는 창가 쓸쓸함')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-blue-300 text-xs font-bold py-2 rounded-xl active:scale-95">🌧️ 빗소리</button>
-      <button onclick="quick('화나고 답답해 불꽃')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-300 text-xs font-bold py-2 rounded-xl active:scale-95">🔥 불꽃</button>
+      <button onclick="quick('행복하고 설레는 팝')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-rose-300 text-xs font-bold py-2 rounded-xl active:scale-95">🥰 설렘</button>
+      <button onclick="quick('고요한 밤 힐링 수면')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-indigo-300 text-xs font-bold py-2 rounded-xl active:scale-95">🌙 수면</button>
+      <button onclick="quick('비 오는 날 감성 피아노')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-blue-300 text-xs font-bold py-2 rounded-xl active:scale-95">🌧️ 빗소리</button>
+      <button onclick="quick('신나는 드라이브 비트')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-300 text-xs font-bold py-2 rounded-xl active:scale-95">🚗 신남</button>
     </div>
   </footer>
 
   <script>
-    const audio = document.getElementById('realAudioPlayer');
-    let currentQuery = 'nature';
+    const audio = document.getElementById('globalAudioPlayer');
+    let searchResults = [];
+    let currentTrackIdx = 0;
+    let currentPhotoQuery = 'nature';
 
-    // --- 글로벌 오픈 음원 사이트 무료 스트리밍 MP3 데이터베이스 ---
-    const freeMusicDatabase = {
-      happy: {
-        title: '상큼하고 경쾌한 어쿠스틱 팝 멜로디',
-        url: 'https://actions.google.com/sounds/v1/ambiences/outdoor_festival.ogg',
-        // 대체 음악 (라이선스 프리 맑은 사운드트랙)
-        backup: 'https://www.w3schools.com/html/horse.mp3'
-      },
-      tired: {
-        title: '깊은 밤 평온한 앰비언트 수면 선율',
-        url: 'https://actions.google.com/sounds/v1/weather/night_crickets_gentle_wind.ogg'
-      },
-      rain: {
-        title: '창가를 토닥이는 실제 밤 빗소리 & 피아노 무드',
-        url: 'https://actions.google.com/sounds/v1/weather/rain_heavy.ogg'
-      },
-      fire: {
-        title: '타닥타닥 타오르는 모닥불과 깊은 베이스',
-        url: 'https://actions.google.com/sounds/v1/ambiences/campfire.ogg'
-      },
-      peaceful: {
-        title: '파도 소리와 함께 흐르는 평화로운 휴식',
-        url: 'https://actions.google.com/sounds/v1/water/lake_waves_gentle.ogg'
-      }
+    // 오디오 재생 끝났을 때 다음 곡 자동 재생
+    audio.onended = () => {
+      playNextSearchResult();
     };
 
-    function playTrack(cat, title) {
-      const data = freeMusicDatabase[cat] || freeMusicDatabase.peaceful;
-      const trackName = title || data.title;
-      
-      document.getElementById('nowPlayingTrack').textContent = trackName;
-      audio.src = data.url;
+    // --- 기분 단어 -> 음원 검색어 & 사진 태그 스마트 매핑 ---
+    function parseMoodTerms(text) {
+      let musicTerm = 'acoustic chill';
+      let photoQuery = 'nature,calm';
+      let emoji = '🌿';
+      let label = '평온한 쉼터';
+      let caption = '"마음을 편안하게 감싸주는 잔잔한 풍경과 음악이에요."';
+
+      if (/행복|설레|신나|기뻐|즐거|최고|사랑|웃음|파티|좋아/g.test(text)) {
+        musicTerm = 'happy pop acoustic';
+        photoQuery = 'happiness,sunshine';
+        emoji = '🥰';
+        label = '행복과 설렘';
+        caption = '"온 세상이 당신의 미소처럼 환하게 빛나고 있어요!"';
+      } else if (/피곤|지쳐|힘들|자고|쉬고|방전|졸려|수면|잠|밤/g.test(text)) {
+        musicTerm = 'sleep piano lofi';
+        photoQuery = 'night,cozy,stars';
+        emoji = '🌙';
+        label = '포근한 밤 휴식';
+        caption = '"오늘 하루도 수고 많았어요. 이제 푹 쉬어요."';
+      } else if (/슬퍼|눈물|울적|외로|쓸쓸|비|그리워|허전/g.test(text)) {
+        musicTerm = 'rainy piano sentimental';
+        photoQuery = 'rain,window,moody';
+        emoji = '🌧️';
+        label = '촉촉한 감성 위로';
+        caption = '"비가 내린 후에는 언제나 맑은 하늘이 찾아와요."';
+      } else if (/화나|짜증|답답|열받|미치|분노|폭발|불꽃|록|락/g.test(text)) {
+        musicTerm = 'rock energy beat';
+        photoQuery = 'fire,dramatic,neon';
+        emoji = '🔥';
+        label = '정화의 불꽃';
+        caption = '"답답했던 모든 걸 여기에 다 털어버려요!"';
+      } else if (/재즈|카페|커피/g.test(text)) {
+        musicTerm = 'cafe jazz piano';
+        photoQuery = 'coffee,cafe';
+        emoji = '☕';
+        label = '따뜻한 카페 재즈';
+        caption = '"은은한 커피 향과 부드러운 재즈 선율."';
+      } else if (/바다|해변|파도|여름/g.test(text)) {
+        musicTerm = 'ocean acoustic guitar';
+        photoQuery = 'ocean,beach';
+        emoji = '🌊';
+        label = '청량한 바다';
+        caption = '"시원한 바닷바람을 온몸으로 느껴보세요."';
+      } else {
+        musicTerm = text + ' instrumental';
+        photoQuery = text;
+        label = text;
+      }
+
+      return { musicTerm, photoQuery, emoji, label, caption };
+    }
+
+    // --- CORS 차단 없는 Apple iTunes Music Open API 실시간 음원 검색 ---
+    async function searchMusicEngine(query) {
+      showLoading(true, '실시간 음원 검색 중...');
+      try {
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&entity=song&limit=15`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.results && data.results.length > 0) {
+          // 미리듣기 mp3 링크가 있는 곡들만 필터링
+          searchResults = data.results.filter(item => item.previewUrl);
+          currentTrackIdx = 0;
+          playTrackByIndex(currentTrackIdx);
+        } else {
+          // 검색 결과 없을 시 기본 힐링 트랙 호출
+          fallbackSearch();
+        }
+      } catch (err) {
+        console.warn('음원 검색 에러, 기본 힐링 트랙으로 대체:', err);
+        fallbackSearch();
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function fallbackSearch() {
+      fetch('https://itunes.apple.com/search?term=acoustic+chill&media=music&entity=song&limit=10')
+        .then(r => r.json())
+        .then(d => {
+          searchResults = d.results.filter(i => i.previewUrl);
+          currentTrackIdx = 0;
+          playTrackByIndex(currentTrackIdx);
+        });
+    }
+
+    function playTrackByIndex(idx) {
+      if (!searchResults || searchResults.length === 0) return;
+      const track = searchResults[idx % searchResults.length];
+
+      document.getElementById('nowPlayingTitle').textContent = track.trackName;
+      document.getElementById('nowPlayingArtist').textContent = track.artistName;
+      if (track.artworkUrl100) {
+        document.getElementById('albumArt').src = track.artworkUrl100;
+      }
+
+      audio.src = track.previewUrl;
       audio.play().then(() => {
         updatePlayBtnUI(true);
-      }).catch(err => {
-        console.log('브라우저 첫 자동재생 정책 대기:', err);
+      }).catch(e => {
+        console.log('재생 대기 중 (사용자 클릭 필요):', e);
         updatePlayBtnUI(false);
       });
     }
 
+    function playNextSearchResult() {
+      if (searchResults.length > 1) {
+        currentTrackIdx = (currentTrackIdx + 1) % searchResults.length;
+        playTrackByIndex(currentTrackIdx);
+      }
+    }
+
     function toggleAudio() {
+      if (!audio.src) {
+        if (searchResults.length > 0) playTrackByIndex(0);
+        return;
+      }
       if (audio.paused) {
         audio.play().then(() => updatePlayBtnUI(true));
       } else {
@@ -190,14 +283,39 @@
 
     function updatePlayBtnUI(isPlaying) {
       const icon = document.getElementById('playBtnIcon');
-      const disc = document.getElementById('discIcon');
+      const album = document.getElementById('albumArt');
       if (isPlaying) {
         icon.className = 'fa-solid fa-pause text-sm';
-        disc.className = 'w-9 h-9 rounded-full bg-rose-950 border border-rose-500/40 flex items-center justify-center text-rose-400 animate-spin';
+        album.classList.add('animate-pulse');
       } else {
         icon.className = 'fa-solid fa-play text-sm';
-        disc.className = 'w-9 h-9 rounded-full bg-indigo-950 border border-indigo-500/40 flex items-center justify-center text-indigo-400';
+        album.classList.remove('animate-pulse');
       }
+    }
+
+    // --- 고화질 실사 사진 검색 ---
+    function searchPhoto(query) {
+      currentPhotoQuery = query;
+      const photo = document.getElementById('moodPhoto');
+      photo.classList.add('opacity-30');
+
+      const seed = Math.floor(Math.random() * 99999);
+      const targetUrl = `https://picsum.photos/seed/${encodeURIComponent(query)}-${seed}/900/675`;
+
+      const img = new Image();
+      img.src = targetUrl;
+      img.onload = () => {
+        photo.src = targetUrl;
+        photo.classList.remove('opacity-30');
+      };
+      img.onerror = () => {
+        photo.src = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&auto=format&fit=crop&q=80';
+        photo.classList.remove('opacity-30');
+      };
+    }
+
+    function fetchAnotherPhoto() {
+      searchPhoto(currentPhotoQuery);
     }
 
     function popFloatingEmojis(emoji) {
@@ -213,58 +331,18 @@
       }
     }
 
-    // --- 한국어 단어 -> 사진 검색 태그 & 음원 테마 매핑 ---
-    function parseMoodKeyword(text) {
-      let query = 'nature,peaceful';
-      let cat = 'peaceful';
-      let emoji = '🌿';
-      let label = '평온한 쉼터';
-      let caption = '"마음을 편안하게 감싸주는 잔잔한 풍경과 음원이에요."';
-      let track = '파도 소리와 함께 흐르는 평화로운 휴식';
-
-      if (/행복|설레|신나|기뻐|즐거|최고|사랑|웃음|파티|좋아/g.test(text)) {
-        query = 'happy,celebration,sunshine';
-        cat = 'happy';
-        emoji = '🥰';
-        label = '행복과 설렘';
-        caption = '"온 세상이 당신의 미소처럼 환하게 빛나고 있어요!"';
-        track = '생기 넘치는 축제와 밝은 야외의 설렘';
-      } else if (/피곤|지쳐|힘들|자고|쉬고|방전|졸려|수면|잠|밤/g.test(text)) {
-        query = 'night,stars,cozy,bed';
-        cat = 'tired';
-        emoji = '🌙';
-        label = '포근한 밤 휴식';
-        caption = '"오늘 하루도 수고 많았어요. 이제 푹 쉬어요."';
-        track = '풀벌레 소리와 밤바람이 어우러진 깊은 수면 사운드';
-      } else if (/슬퍼|눈물|울적|외로|쓸쓸|비|그리워|허전/g.test(text)) {
-        query = 'rain,window,ocean,mist';
-        cat = 'rain';
-        emoji = '🌧️';
-        label = '촉촉한 빗물과 위로';
-        caption = '"비가 내린 후에는 언제나 맑은 하늘이 찾아와요."';
-        track = '마음을 적셔주는 포근한 빗소리 힐링 트랙';
-      } else if (/화나|짜증|답답|열받|미치|분노|폭발|불꽃/g.test(text)) {
-        query = 'fire,bonfire,volcano,dramatic';
-        cat = 'fire';
-        emoji = '🔥';
-        label = '정화의 불꽃';
-        caption = '"답답했던 모든 걸 여기에 다 태워버려요!"';
-        track = '타닥타닥 타오르는 모닥불 사운드트랙';
-      } else if (/바다|파도|해변|여름/g.test(text)) {
-        query = 'ocean,beach,waves';
-        cat = 'peaceful';
-        emoji = '🌊';
-        label = '시원한 바다';
-        caption = '"끝없이 펼쳐진 수평선을 보며 숨을 깊게 들이쉬어봐요."';
-        track = '시원하고 청량한 바닷가 파도 소리';
+    function showLoading(show, text = '') {
+      const spinner = document.getElementById('loadingSpinner');
+      const txt = document.getElementById('loadingStatusText');
+      if (show) {
+        txt.textContent = text;
+        spinner.classList.remove('hidden');
       } else {
-        query = encodeURIComponent(text);
-        label = text;
+        spinner.classList.add('hidden');
       }
-
-      return { query, cat, emoji, label, caption, track };
     }
 
+    // 메인 감정 적용 트리거
     function applyMood() {
       const text = document.getElementById('moodInput').value.trim();
       if (!text) {
@@ -272,50 +350,21 @@
         return;
       }
 
-      const meta = parseMoodKeyword(text);
-      currentQuery = meta.query;
+      const meta = parseMoodTerms(text);
 
       document.getElementById('badgeEmoji').textContent = meta.emoji;
       document.getElementById('badgeLabel').textContent = meta.label;
       document.getElementById('photoCaption').textContent = meta.caption;
-      document.getElementById('searchedKeywordTag').textContent = '#' + meta.query.replace(/,/g, ' #');
+      document.getElementById('searchedKeywordTag').textContent = '#' + meta.musicTerm.replace(/ /g, ' #');
 
-      // 1. 단어 맞춤 고화질 사진 로드
-      searchPhoto(currentQuery);
+      // 1. 단어 맞춤 실시간 음원 검색 & 자동 스트리밍
+      searchMusicEngine(meta.musicTerm);
 
-      // 2. 단어 맞춤 무료 음원 사이트 MP3 재생
-      playTrack(meta.cat, meta.track);
+      // 2. 단어 맞춤 고화질 사진 검색
+      searchPhoto(meta.photoQuery);
 
-      // 3. 비주얼 리액션
+      // 3. 이모지 리액션
       popFloatingEmojis(meta.emoji);
-    }
-
-    function searchPhoto(query) {
-      const spinner = document.getElementById('loadingSpinner');
-      const photo = document.getElementById('moodPhoto');
-
-      spinner.classList.remove('hidden');
-      photo.classList.add('opacity-30');
-
-      const randomSeed = Math.floor(Math.random() * 999999);
-      const targetUrl = `https://picsum.photos/seed/${query}-${randomSeed}/900/675`;
-
-      const img = new Image();
-      img.src = targetUrl;
-      img.onload = () => {
-        photo.src = targetUrl;
-        photo.classList.remove('opacity-30');
-        spinner.classList.add('hidden');
-      };
-      img.onerror = () => {
-        photo.src = `https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&auto=format&fit=crop&q=80`;
-        photo.classList.remove('opacity-30');
-        spinner.classList.add('hidden');
-      };
-    }
-
-    function fetchAnotherPhoto() {
-      searchPhoto(currentQuery);
     }
 
     function quick(str) {
@@ -352,6 +401,11 @@
       if (isListening) recognition.stop();
       else recognition.start();
     }
+
+    // 초기 화면 로드 시 첫 음악 준비
+    window.addEventListener('load', () => {
+      searchPhoto('peaceful,nature');
+    });
   </script>
 </body>
 </html>
