@@ -4,7 +4,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>기분 단어 실시간 모션 영상 & 음원 🎬🎵</title>
+  <title>기분 단어 실시간 포토 & 음원 매칭 📸🎵</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -24,58 +24,51 @@
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-between p-4 select-none pb-8 overflow-x-hidden">
 
-  <!-- 메인 오디오 플레이어 -->
+  <!-- 메인 오디오 플레이어 태그 -->
   <audio id="globalAudioPlayer" preload="auto"></audio>
 
   <!-- 헤더 영역 -->
   <header class="w-full max-w-sm text-center pt-2">
     <div class="inline-block bg-gradient-to-r from-rose-900 to-indigo-900 text-rose-300 text-xs font-bold px-3.5 py-1 rounded-full mb-1 border border-rose-700/50 shadow-sm">
-      🎬 100% 재생 보장 모션 영상 & 음원
+      🎵 차단 없는 글로벌 음원 & 포토 검색
     </div>
     <h1 class="text-2xl font-black text-rose-100 flex items-center justify-center gap-1.5">
-      기분 찰칵 무비 캔버스 🎬
+      기분 찰칵 뮤직 캔버스 📸
     </h1>
-    <p class="text-xs text-slate-400 mt-1">단어를 누르면 움직이는 영상과 음악이 바로 나와요</p>
+    <p class="text-xs text-slate-400 mt-1">단어를 입력하면 실시간으로 사진과 노래를 찾아 틀어줘요</p>
   </header>
 
-  <!-- 메인 영상 뷰포트 및 플레이어 -->
+  <!-- 메인 사진 액자 및 플레이어 -->
   <main class="w-full max-w-sm my-auto flex flex-col items-center relative">
     
-    <!-- 비디오 뷰포트 -->
+    <!-- 사진 뷰포트 -->
     <div class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-2 border-slate-700 bg-slate-900 flex items-center justify-center">
       
       <!-- 로딩 인디케이터 -->
       <div id="loadingSpinner" class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm flex flex-col items-center justify-center z-30 hidden">
         <i class="fa-solid fa-compact-disc fa-spin text-4xl text-rose-400 mb-2"></i>
-        <span id="loadingStatusText" class="text-xs font-bold text-slate-300">영상 & 음악 불러오는 중...</span>
+        <span id="loadingStatusText" class="text-xs font-bold text-slate-300">음악 & 사진 실시간 검색 중...</span>
       </div>
 
-      <!-- 무제한 반복 재생 영상 (위키미디어 오픈 CDN 직결) -->
-      <video id="moodVideo" 
-             autoplay loop muted playsinline 
-             webkit-playsinline="true"
-             crossorigin="anonymous"
-             poster="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80"
-             class="w-full h-full object-cover transition-opacity duration-500 opacity-100">
-        <source id="videoSource" src="https://upload.wikimedia.org/wikipedia/commons/transcoded/f/f1/Sea_waves_cliff.webm/Sea_waves_cliff.webm.480p.vp9.webm" type="video/webm">
-      </video>
-
-      <!-- 백업용 모션 이미지 (비디오 지원 불가 시 1초 만에 자동 전환) -->
-      <img id="backupMotionImg" src="" alt="움직이는 풍경" class="w-full h-full object-cover hidden">
+      <!-- 배경 사진 -->
+      <img id="moodPhoto" 
+           src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&auto=format&fit=crop&q=80" 
+           alt="기분 사진" 
+           class="w-full h-full object-cover transition-opacity duration-500 opacity-100">
       
       <!-- 오버레이 그라데이션 -->
-      <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none"></div>
 
       <!-- 상단 감정 뱃지 -->
       <div class="absolute top-3 left-3 bg-black/65 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 text-xs font-bold flex items-center gap-1.5 shadow-md z-10">
-        <span id="badgeEmoji">🌊</span>
-        <span id="badgeLabel">시원한 바다</span>
+        <span id="badgeEmoji">🌿</span>
+        <span id="badgeLabel">평온한 쉼터</span>
       </div>
 
-      <!-- 영상 새로고침 셔플 버튼 -->
-      <button onclick="fetchAnotherVideo()" title="이 단어로 다른 영상 보기" class="absolute top-3 right-3 bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/20 text-xs font-bold text-rose-200 px-2.5 py-1 rounded-full flex items-center gap-1 active:scale-95 transition shadow-md z-10">
+      <!-- 사진 새로고침 버튼 -->
+      <button onclick="fetchAnotherPhoto()" title="이 단어로 다른 사진 보기" class="absolute top-3 right-3 bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/20 text-xs font-bold text-rose-200 px-2.5 py-1 rounded-full flex items-center gap-1 active:scale-95 transition shadow-md z-10">
         <i class="fa-solid fa-rotate text-[11px]"></i>
-        <span>다른 영상</span>
+        <span>다른 사진</span>
       </button>
 
       <!-- 솟아오르는 이모지 -->
@@ -85,11 +78,11 @@
       <div class="absolute bottom-3 inset-x-3 text-center pointer-events-none z-10">
         <div class="mb-1">
           <span id="searchedKeywordTag" class="text-[10px] bg-white/20 backdrop-blur-sm text-slate-200 px-2 py-0.5 rounded-md font-mono">
-            #ocean #waves #healing
+            #peaceful #calm
           </span>
         </div>
-        <p id="videoCaption" class="text-xs font-black text-rose-200 drop-shadow-md">
-          "일렁이는 파도처럼 마음속 고민도 시원하게 흘려보내요."
+        <p id="photoCaption" class="text-xs font-black text-rose-200 drop-shadow-md">
+          "지금 마음에 닿는 가장 따스한 순간을 비춰드릴게요."
         </p>
       </div>
     </div>
@@ -110,9 +103,11 @@
       </div>
 
       <div class="flex items-center gap-1.5 shrink-0">
+        <!-- 다음 곡 셔플 -->
         <button onclick="playNextSearchResult()" title="이 기분 다음 곡" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center active:scale-95 transition">
           <i class="fa-solid fa-forward-step text-xs"></i>
         </button>
+        <!-- 재생/일시정지 -->
         <button id="playToggleBtn" onclick="toggleAudio()" class="w-10 h-10 rounded-xl bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center active:scale-95 transition shadow-md">
           <i id="playBtnIcon" class="fa-solid fa-play text-sm"></i>
         </button>
@@ -130,8 +125,8 @@
       </div>
 
       <button onclick="applyMood()" class="w-full py-4 bg-gradient-to-r from-rose-600 via-pink-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white font-black text-sm rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-95 transition">
-        <i class="fa-solid fa-film text-lg"></i>
-        <span>이 기분으로 영상 & 음악 켜기!</span>
+        <i class="fa-solid fa-magnifying-glass text-lg"></i>
+        <span>이 기분으로 사진 & 음악 검색!</span>
       </button>
     </div>
 
@@ -139,148 +134,94 @@
 
   <!-- 빠른 감정 버튼들 -->
   <footer class="w-full max-w-sm pt-2">
-    <div class="text-[11px] font-bold text-slate-400 mb-1.5 px-1">기분 영상 바로 보기:</div>
+    <div class="text-[11px] font-bold text-slate-400 mb-1.5 px-1">기분 단어 바로 터치:</div>
     <div class="grid grid-cols-4 gap-1.5">
       <button onclick="quick('행복하고 설레는 팝')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-rose-300 text-xs font-bold py-2 rounded-xl active:scale-95">🥰 설렘</button>
       <button onclick="quick('고요한 밤 힐링 수면')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-indigo-300 text-xs font-bold py-2 rounded-xl active:scale-95">🌙 수면</button>
       <button onclick="quick('비 오는 날 감성 피아노')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-blue-300 text-xs font-bold py-2 rounded-xl active:scale-95">🌧️ 빗소리</button>
-      <button onclick="quick('신나는 드라이브 비트')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-300 text-xs font-bold py-2 rounded-xl active:scale-95">🔥 불꽃</button>
+      <button onclick="quick('신나는 드라이브 비트')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-300 text-xs font-bold py-2 rounded-xl active:scale-95">🚗 신남</button>
     </div>
   </footer>
 
   <script>
     const audio = document.getElementById('globalAudioPlayer');
-    const video = document.getElementById('moodVideo');
-    const backupImg = document.getElementById('backupMotionImg');
     let searchResults = [];
     let currentTrackIdx = 0;
-    let currentMoodCategory = 'ocean';
+    let currentPhotoQuery = 'nature';
 
+    // 오디오 재생 끝났을 때 다음 곡 자동 재생
     audio.onended = () => {
       playNextSearchResult();
     };
 
-    // --- 차단 0% 위키미디어 공식 오픈 CDN 비디오 + 라이브 모션 그래픽 ---
-    const mediaDatabase = {
-      ocean: {
-        videos: [
-          'https://upload.wikimedia.org/wikipedia/commons/transcoded/f/f1/Sea_waves_cliff.webm/Sea_waves_cliff.webm.480p.vp9.webm',
-          'https://upload.wikimedia.org/wikipedia/commons/transcoded/8/8d/Beach_Waves_Loop.webm/Beach_Waves_Loop.webm.480p.vp9.webm'
-        ],
-        fallbackGif: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80'
-      },
-      rain: {
-        videos: [
-          'https://upload.wikimedia.org/wikipedia/commons/transcoded/a/a2/Rain_drops_on_a_window.webm/Rain_drops_on_a_window.webm.480p.vp9.webm',
-          'https://upload.wikimedia.org/wikipedia/commons/transcoded/d/d3/Rain_falling_on_water_surface.webm/Rain_falling_on_water_surface.webm.480p.vp9.webm'
-        ],
-        fallbackGif: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=800&auto=format&fit=crop&q=80'
-      },
-      night: {
-        videos: [
-          'https://upload.wikimedia.org/wikipedia/commons/transcoded/c/c5/Milky_Way_Timelapse.webm/Milky_Way_Timelapse.webm.480p.vp9.webm',
-          'https://upload.wikimedia.org/wikipedia/commons/transcoded/e/e8/Night_Sky_Stars_Rotation.webm/Night_Sky_Stars_Rotation.webm.480p.vp9.webm'
-        ],
-        fallbackGif: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?w=800&auto=format&fit=crop&q=80'
-      },
-      happy: {
-        videos: [
-          'https://upload.wikimedia.org/wikipedia/commons/transcoded/b/b4/Sunlight_through_forest_trees.webm/Sunlight_through_forest_trees.webm.480p.vp9.webm',
-          'https://upload.wikimedia.org/wikipedia/commons/transcoded/7/7b/Blooming_flowers_timelapse.webm/Blooming_flowers_timelapse.webm.480p.vp9.webm'
-        ],
-        fallbackGif: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop&q=80'
-      },
-      fire: {
-        videos: [
-          'https://upload.wikimedia.org/wikipedia/commons/transcoded/3/30/Campfire_burning_at_night.webm/Campfire_burning_at_night.webm.480p.vp9.webm',
-          'https://upload.wikimedia.org/wikipedia/commons/transcoded/1/1b/Fire_flames_in_slow_motion.webm/Fire_flames_in_slow_motion.webm.480p.vp9.webm'
-        ],
-        fallbackGif: 'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?w=800&auto=format&fit=crop&q=80'
-      }
-    };
-
+    // --- 기분 단어 -> 음원 검색어 & 사진 태그 스마트 매핑 ---
     function parseMoodTerms(text) {
       let musicTerm = 'acoustic chill';
-      let cat = 'ocean';
-      let emoji = '🌊';
-      let label = '시원한 바다';
-      let caption = '"일렁이는 파도처럼 마음속 고민도 시원하게 흘려보내요."';
+      let photoQuery = 'nature,calm';
+      let emoji = '🌿';
+      let label = '평온한 쉼터';
+      let caption = '"마음을 편안하게 감싸주는 잔잔한 풍경과 음악이에요."';
 
       if (/행복|설레|신나|기뻐|즐거|최고|사랑|웃음|파티|좋아/g.test(text)) {
         musicTerm = 'happy pop acoustic';
-        cat = 'happy';
+        photoQuery = 'happiness,sunshine';
         emoji = '🥰';
         label = '행복과 설렘';
-        caption = '"나뭇잎 사이로 쏟아지는 햇살처럼 환하게 빛나요!"';
+        caption = '"온 세상이 당신의 미소처럼 환하게 빛나고 있어요!"';
       } else if (/피곤|지쳐|힘들|자고|쉬고|방전|졸려|수면|잠|밤/g.test(text)) {
         musicTerm = 'sleep piano lofi';
-        cat = 'night';
+        photoQuery = 'night,cozy,stars';
         emoji = '🌙';
         label = '포근한 밤 휴식';
-        caption = '"밤하늘의 수많은 별들이 지친 당신을 꼭 안아줄 거예요."';
+        caption = '"오늘 하루도 수고 많았어요. 이제 푹 쉬어요."';
       } else if (/슬퍼|눈물|울적|외로|쓸쓸|비|그리워|허전/g.test(text)) {
         musicTerm = 'rainy piano sentimental';
-        cat = 'rain';
+        photoQuery = 'rain,window,moody';
         emoji = '🌧️';
         label = '촉촉한 감성 위로';
-        caption = '"창가를 적시는 빗방울을 보며 마음을 토닥여보세요."';
-      } else if (/화나|짜증|답답|열받|미치|분노|폭발|불꽃|록|락|드라이브/g.test(text)) {
+        caption = '"비가 내린 후에는 언제나 맑은 하늘이 찾아와요."';
+      } else if (/화나|짜증|답답|열받|미치|분노|폭발|불꽃|록|락/g.test(text)) {
         musicTerm = 'rock energy beat';
-        cat = 'fire';
+        photoQuery = 'fire,dramatic,neon';
         emoji = '🔥';
         label = '정화의 불꽃';
-        caption = '"타오르는 에너지로 답답함을 시원하게 날려버려요!"';
+        caption = '"답답했던 모든 걸 여기에 다 털어버려요!"';
+      } else if (/재즈|카페|커피/g.test(text)) {
+        musicTerm = 'cafe jazz piano';
+        photoQuery = 'coffee,cafe';
+        emoji = '☕';
+        label = '따뜻한 카페 재즈';
+        caption = '"은은한 커피 향과 부드러운 재즈 선율."';
+      } else if (/바다|해변|파도|여름/g.test(text)) {
+        musicTerm = 'ocean acoustic guitar';
+        photoQuery = 'ocean,beach';
+        emoji = '🌊';
+        label = '청량한 바다';
+        caption = '"시원한 바닷바람을 온몸으로 느껴보세요."';
+      } else {
+        musicTerm = text + ' instrumental';
+        photoQuery = text;
+        label = text;
       }
 
-      return { musicTerm, cat, emoji, label, caption };
+      return { musicTerm, photoQuery, emoji, label, caption };
     }
 
-    // --- 비디오 강제 로더 & 실패 시 1초 만에 안전 백업 ---
-    function changeVideo(cat) {
-      currentMoodCategory = cat;
-      const data = mediaDatabase[cat] || mediaDatabase.ocean;
-      const videoList = data.videos;
-      const videoSrc = videoList[Math.floor(Math.random() * videoList.length)];
-
-      video.classList.remove('hidden');
-      backupImg.classList.add('hidden');
-      video.muted = true; // 모바일 자동재생 필수 조건
-      video.setAttribute('playsinline', '');
-      video.setAttribute('webkit-playsinline', 'true');
-
-      video.src = videoSrc;
-      video.load();
-
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          video.classList.remove('opacity-30');
-        }).catch(err => {
-          console.warn('모바일 비디오 차단 감지, 고화질 모션 이미지로 즉시 전환:', err);
-          video.classList.add('hidden');
-          backupImg.src = data.fallbackGif;
-          backupImg.classList.remove('hidden');
-        });
-      }
-    }
-
-    function fetchAnotherVideo() {
-      changeVideo(currentMoodCategory);
-    }
-
-    // --- Apple iTunes Music 실시간 음원 검색 (차단율 0%) ---
+    // --- CORS 차단 없는 Apple iTunes Music Open API 실시간 음원 검색 ---
     async function searchMusicEngine(query) {
-      showLoading(true, '실시간 음악 찾는 중...');
+      showLoading(true, '실시간 음원 검색 중...');
       try {
         const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&entity=song&limit=15`;
         const res = await fetch(url);
         const data = await res.json();
 
         if (data.results && data.results.length > 0) {
+          // 미리듣기 mp3 링크가 있는 곡들만 필터링
           searchResults = data.results.filter(item => item.previewUrl);
           currentTrackIdx = 0;
           playTrackByIndex(currentTrackIdx);
         } else {
+          // 검색 결과 없을 시 기본 힐링 트랙 호출
           fallbackSearch();
         }
       } catch (err) {
@@ -315,7 +256,7 @@
       audio.play().then(() => {
         updatePlayBtnUI(true);
       }).catch(e => {
-        console.log('재생 대기 (터치 필요):', e);
+        console.log('재생 대기 중 (사용자 클릭 필요):', e);
         updatePlayBtnUI(false);
       });
     }
@@ -352,6 +293,31 @@
       }
     }
 
+    // --- 고화질 실사 사진 검색 ---
+    function searchPhoto(query) {
+      currentPhotoQuery = query;
+      const photo = document.getElementById('moodPhoto');
+      photo.classList.add('opacity-30');
+
+      const seed = Math.floor(Math.random() * 99999);
+      const targetUrl = `https://picsum.photos/seed/${encodeURIComponent(query)}-${seed}/900/675`;
+
+      const img = new Image();
+      img.src = targetUrl;
+      img.onload = () => {
+        photo.src = targetUrl;
+        photo.classList.remove('opacity-30');
+      };
+      img.onerror = () => {
+        photo.src = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&auto=format&fit=crop&q=80';
+        photo.classList.remove('opacity-30');
+      };
+    }
+
+    function fetchAnotherPhoto() {
+      searchPhoto(currentPhotoQuery);
+    }
+
     function popFloatingEmojis(emoji) {
       const container = document.getElementById('floatingEmojiContainer');
       container.innerHTML = '';
@@ -376,6 +342,7 @@
       }
     }
 
+    // 메인 감정 적용 트리거
     function applyMood() {
       const text = document.getElementById('moodInput').value.trim();
       if (!text) {
@@ -387,11 +354,16 @@
 
       document.getElementById('badgeEmoji').textContent = meta.emoji;
       document.getElementById('badgeLabel').textContent = meta.label;
-      document.getElementById('videoCaption').textContent = meta.caption;
+      document.getElementById('photoCaption').textContent = meta.caption;
       document.getElementById('searchedKeywordTag').textContent = '#' + meta.musicTerm.replace(/ /g, ' #');
 
-      changeVideo(meta.cat);
+      // 1. 단어 맞춤 실시간 음원 검색 & 자동 스트리밍
       searchMusicEngine(meta.musicTerm);
+
+      // 2. 단어 맞춤 고화질 사진 검색
+      searchPhoto(meta.photoQuery);
+
+      // 3. 이모지 리액션
       popFloatingEmojis(meta.emoji);
     }
 
@@ -400,7 +372,7 @@
       applyMood();
     }
 
-    // 마이크 STT 음성인식
+    // 마이크 음성인식
     let isListening = false;
     let recognition = null;
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -430,9 +402,9 @@
       else recognition.start();
     }
 
-    // 첫 진입 시 바다 영상 바로 가동
+    // 초기 화면 로드 시 첫 음악 준비
     window.addEventListener('load', () => {
-      changeVideo('ocean');
+      searchPhoto('peaceful,nature');
     });
   </script>
 </body>
